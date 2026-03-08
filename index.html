@@ -1947,7 +1947,11 @@ function releaseMoveTouch(e){
 }
 document.addEventListener('touchend',releaseMoveTouch);
 document.addEventListener('touchcancel',releaseMoveTouch);
-document.addEventListener('mousemove',function(e){if(p2.on)p2.rocket.tx=e.clientX;});
+document.addEventListener('mousemove',function(e){
+  if(!p2.on)return;
+  if(e.sourceCapabilities&&e.sourceCapabilities.firesTouchEvents)return;
+  p2.rocket.tx=e.clientX;
+});
 document.addEventListener('keydown',function(e){
   if(!p2.on)return;
   if(e.key==='ArrowLeft') p2.rocket.tx=p2.rocket.x-50;
@@ -1961,15 +1965,15 @@ document.addEventListener('keyup',function(e){
 // Turbo touch button
 (function(){
   var tb=document.getElementById('p2turbo');
-  tb.addEventListener('touchstart',function(e){e.preventDefault();if(p2.on){p2.turbo=true;tb.classList.add('active');}},{passive:false});
-  tb.addEventListener('touchend',function(){p2.turbo=false;tb.classList.remove('active');});
+  tb.addEventListener('touchstart',function(e){e.preventDefault();e.stopPropagation();if(p2.on){p2.turbo=true;tb.classList.add('active');}},{passive:false});
+  tb.addEventListener('touchend',function(e){e.stopPropagation();p2.turbo=false;tb.classList.remove('active');});
   tb.addEventListener('mousedown',function(e){e.preventDefault();if(p2.on){p2.turbo=true;tb.classList.add('active');}});
   tb.addEventListener('mouseup',function(){p2.turbo=false;tb.classList.remove('active');});
 })();
 // Shoot touch button
 (function(){
   var sb=document.getElementById('p2shoot');
-  sb.addEventListener('touchstart',function(e){e.preventDefault();p2Shoot();},{passive:false});
+  sb.addEventListener('touchstart',function(e){e.preventDefault();e.stopPropagation();p2Shoot();},{passive:false});
   sb.addEventListener('mousedown',function(e){e.preventDefault();p2Shoot();});
 })();
 
