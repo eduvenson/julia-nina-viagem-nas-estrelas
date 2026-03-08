@@ -1911,6 +1911,7 @@ function isButtonTouch(t) {
   while(el){if(el.id==='p2shoot'||el.id==='p2turbo')return true;el=el.parentElement;}
   return false;
 }
+// TOUCHSTART: only register ID — single tap does NOT move rocket
 document.addEventListener('touchstart',function(e){
   if(!p2.on)return;
   e.preventDefault();
@@ -1918,11 +1919,12 @@ document.addEventListener('touchstart',function(e){
     var t=e.changedTouches[i];
     if(!isButtonTouch(t)&&moveTouchId===null){
       moveTouchId=t.identifier;
-      p2.rocket.tx=t.clientX;
+      // No rocket.tx update here — only dragging (touchmove) moves the rocket
       break;
     }
   }
 },{passive:false});
+// TOUCHMOVE: move rocket only while dragging
 document.addEventListener('touchmove',function(e){
   if(!p2.on)return;
   e.preventDefault();
@@ -1933,16 +1935,18 @@ document.addEventListener('touchmove',function(e){
     }
   }
 },{passive:false});
-document.addEventListener('touchend',function(e){
+// TOUCHEND/CANCEL: release ID, reset accel baseline so it doesn't jump
+function releaseMoveTouch(e){
   for(var i=0;i<e.changedTouches.length;i++){
-    if(e.changedTouches[i].identifier===moveTouchId){moveTouchId=null;break;}
+    if(e.changedTouches[i].identifier===moveTouchId){
+      moveTouchId=null;
+      accelBaseline=null; // re-calibrate after finger lifts
+      break;
+    }
   }
-});
-document.addEventListener('touchcancel',function(e){
-  for(var i=0;i<e.changedTouches.length;i++){
-    if(e.changedTouches[i].identifier===moveTouchId){moveTouchId=null;break;}
-  }
-});
+}
+document.addEventListener('touchend',releaseMoveTouch);
+document.addEventListener('touchcancel',releaseMoveTouch);
 document.addEventListener('mousemove',function(e){if(p2.on)p2.rocket.tx=e.clientX;});
 document.addEventListener('keydown',function(e){
   if(!p2.on)return;
@@ -1984,12 +1988,15 @@ function enableAccel() {
   accelEnabled = true; accelBaseline = null;
   window.addEventListener('deviceorientation', function(e) {
     if (!p2.on || !accelEnabled) return;
+    // Pause accel while finger is dragging — avoid fighting with touch
+    if (moveTouchId !== null) { accelBaseline = null; return; }
     if (accelBaseline === null) accelBaseline = e.gamma;
-    var tilt = (e.gamma - accelBaseline); // degrees left/right
-    var deadzone = 3;
+    var tilt = (e.gamma - accelBaseline);
+    var deadzone = 4;
     if (Math.abs(tilt) > deadzone) {
-      var move = (tilt - (tilt>0?deadzone:-deadzone)) * 4.5;
-      p2.rocket.tx = Math.max(0, Math.min(p2.W, p2.rocket.x + move));
+      var move = (tilt - (tilt>0?deadzone:-deadzone)) * 5;
+      // Accumulate on tx (not x) for smoother response
+      p2.rocket.tx = Math.max(0, Math.min(p2.W, p2.rocket.tx + move));
     }
   }, true);
 }
