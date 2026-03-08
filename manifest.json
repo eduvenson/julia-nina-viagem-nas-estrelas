@@ -1,0 +1,17 @@
+{
+  "name": "Viagem nas Estrelas",
+  "short_name": "Viagem ⭐",
+  "description": "Um jogo espacial para Julia e Ninna!",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#050816",
+  "theme_color": "#050816",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23050816'/><text y='.9em' font-size='160'>🚀</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
