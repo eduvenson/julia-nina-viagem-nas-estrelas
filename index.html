@@ -272,41 +272,44 @@ function scr(id) { var all = document.querySelectorAll('.scr'); for(var i=0;i<al
 
 // ============== INTRO ==============
 var introSlides = [
-  {emoji:'🌞', text:'Sabe aquele calorzinho gostoso que vocês sentem?', sub:'Vem de muito, muito longe...'},
-  {emoji:'☀️', text:'Ele vem do SOL!', sub:'Uma estrela gigante feita de fogo!'},
-  {emoji:'🪐', text:'E ao redor do Sol giram planetas...', sub:'Cada um diferente e especial!'},
-  {emoji:'🌍', text:'Um deles é a Terra — a casa de vocês!', sub:'🇦🇷 Ninna e Julia 🇧🇷 moram aqui!'},
-  {emoji:'🚀', text:'Hoje vocês vão viajar pelo espaço!', sub:'Conhecer cada planeta de pertinho!'},
-  {emoji:'⭐', text:'Preparadas, astronautas?', sub:''}
+  {emoji:'🌞', text:{pt:'Sabe aquele calorzinho gostoso que vocês sentem?',   es:'¿Saben ese calorcito rico que sienten?'},        sub:{pt:'Vem de muito, muito longe...',              es:'Viene de muy, muy lejos...'}},
+  {emoji:'☀️', text:{pt:'Ele vem do SOL!',                                    es:'¡Viene del SOL!'},                              sub:{pt:'Uma estrela gigante feita de fogo!',         es:'¡Una estrella gigante hecha de fuego!'}},
+  {emoji:'🪐', text:{pt:'E ao redor do Sol giram planetas...',                es:'Y alrededor del Sol giran planetas...'},         sub:{pt:'Cada um diferente e especial!',              es:'¡Cada uno diferente y especial!'}},
+  {emoji:'🌍', text:{pt:'Um deles é a Terra — a casa de vocês!',              es:'¡Uno de ellos es la Tierra — la casa de ustedes!'}, sub:{pt:'🇦🇷 Ninna e Julia 🇧🇷 moram aqui!',  es:'🇦🇷 Ninna y Julia 🇧🇷 viven acá!'}},
+  {emoji:'🚀', text:{pt:'Hoje vocês vão viajar pelo espaço!',                 es:'¡Hoy van a viajar por el espacio!'},            sub:{pt:'Conhecer cada planeta de pertinho!',         es:'¡Conocer cada planeta de cerquita!'}},
+  {emoji:'⭐', text:{pt:'Preparadas, astronautas?',                           es:'¿Listas, astronautas?'},                        sub:{pt:'',                                          es:''}}
 ];
 
-// Start button - THIS is the user gesture that unlocks audio
+// Start button - vai direto pra escolha do personagem
 document.getElementById('startBtn').addEventListener('click', function() {
   unlockAudio();
-  setTimeout(function() {
-    startBGM();
-    snd('intro');
-  }, 100);
+  setTimeout(function() { startBGM(); snd('click'); }, 100);
+  scr('pick');
+});
+
+function startIntro() {
   introIdx = 0;
   var el = document.getElementById('intro');
   var dotsH = '';
   for (var i = 0; i < introSlides.length; i++) dotsH += '<div class="intro-dot '+(i===0?'active':'')+'"></div>';
-  el.innerHTML = '<div class="intro-dots" id="iDots">'+dotsH+'</div><button class="intro-skip" id="skipBtn">Pular →</button>';
+  el.innerHTML = '<div class="intro-dots" id="iDots">'+dotsH+'</div><button class="intro-skip" id="skipBtn">'+t('Pular →','Saltar →')+'</button>';
   document.getElementById('skipBtn').addEventListener('click', function(e) { e.stopPropagation(); endIntro(); });
   scr('intro');
   showIntroSlide(0);
-});
+}
 
 function showIntroSlide(i) {
   introIdx = i;
   if (i >= introSlides.length) { endIntro(); return; }
   snd('intro');
   var s = introSlides[i];
+  var txt = t(s.text.pt, s.text.es);
+  var sub = t(s.sub.pt, s.sub.es);
   var old = document.querySelectorAll('.intro-slide');
   for (var j = 0; j < old.length; j++) old[j].remove();
   var slide = document.createElement('div');
   slide.className = 'intro-slide';
-  slide.innerHTML = '<div class="intro-emoji">'+s.emoji+'</div><div class="intro-text">'+s.text+'</div>'+(s.sub ? '<div class="intro-sub">'+s.sub+'</div>' : '');
+  slide.innerHTML = '<div class="intro-emoji">'+s.emoji+'</div><div class="intro-text">'+txt+'</div>'+(sub ? '<div class="intro-sub">'+sub+'</div>' : '');
   document.getElementById('intro').appendChild(slide);
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ slide.classList.add('show'); }); });
   var dots = document.querySelectorAll('.intro-dot');
@@ -315,7 +318,7 @@ function showIntroSlide(i) {
   introTimer = setTimeout(function(){ slide.classList.remove('show'); setTimeout(function(){ showIntroSlide(i+1); }, 400); }, 6000);
 }
 
-function endIntro() { clearTimeout(introTimer); scr('pick'); }
+function endIntro() { clearTimeout(introTimer); launch(); }
 
 document.getElementById('intro').addEventListener('click', function(e) {
   if (e.target.id === 'skipBtn' || e.target.closest('#skipBtn')) return;
@@ -328,7 +331,7 @@ document.getElementById('intro').addEventListener('click', function(e) {
 // ============== SELECT ==============
 document.getElementById('cN').addEventListener('click', function(){ sel('nina'); });
 document.getElementById('cJ').addEventListener('click', function(){ sel('julia'); });
-document.getElementById('pkG').addEventListener('click', function(){ launch(); });
+document.getElementById('pkG').addEventListener('click', function(){ startIntro(); });
 
 function sel(w) {
   unlockAudio(); snd('click');
