@@ -1,5 +1,6 @@
-var CACHE = 'viagem-estrelas-v1';
-var FILES = ['/', '/index.html'];
+var CACHE = 'viagem-estrelas-v2';
+var BASE = '/julia-nina-viagem-nas-estrelas';
+var FILES = [BASE+'/', BASE+'/index.html', BASE+'/manifest.json'];
 self.addEventListener('install', function(e) {
   e.waitUntil(caches.open(CACHE).then(function(c) { return c.addAll(FILES); }));
   self.skipWaiting();
