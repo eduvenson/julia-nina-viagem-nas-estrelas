@@ -1065,8 +1065,8 @@ function p2Drw() {
         var ra=ht*(1.5-ri*0.3)+o.rot, rr=hr*(1.4+ri*0.35);
         c.save(); c.translate(o.x,o.y); c.rotate(ra); c.scale(1,0.35);
         var rc=c.createRadialGradient(0,0,rr*0.7,0,0,rr);
-        var col=ri===0?'rgba(255,160,30,':'ri===1?rgba(200,80,255,':'rgba(80,180,255,';
-        if(ri===0) rc.addColorStop(0,'rgba(255,160,30,0.5)'); else if(ri===1) rc.addColorStop(0,'rgba(200,80,255,0.4)'); else rc.addColorStop(0,'rgba(80,180,255,0.3)');
+        var col=ri===0?'rgba(255,160,30,0.5)':ri===1?'rgba(200,80,255,0.4)':'rgba(80,180,255,0.3)';
+        rc.addColorStop(0,col);
         rc.addColorStop(1,'rgba(0,0,0,0)');
         c.fillStyle=rc; c.beginPath(); c.arc(0,0,rr,0,6.28); c.fill();
         c.restore();
