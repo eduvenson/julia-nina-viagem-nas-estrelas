@@ -1788,8 +1788,26 @@ function p2Msg(text,dur) {
 }
 
 // Phase 2 touch/mouse/keyboard controls
-document.addEventListener('touchmove',function(e){if(p2.on){e.preventDefault();p2.rocket.tx=e.touches[0].clientX;}},{passive:false});
-document.addEventListener('touchstart',function(e){if(p2.on){e.preventDefault();p2.rocket.tx=e.touches[0].clientX;}},{passive:false});
+function isButtonTouch(t) {
+  var el=t.target;
+  while(el){if(el.id==='p2shoot'||el.id==='p2turbo')return true;el=el.parentElement;}
+  return false;
+}
+document.addEventListener('touchmove',function(e){
+  if(!p2.on)return;
+  e.preventDefault();
+  // Find first touch that didn't start on a button
+  for(var i=0;i<e.touches.length;i++){
+    if(!isButtonTouch(e.touches[i])){p2.rocket.tx=e.touches[i].clientX;break;}
+  }
+},{passive:false});
+document.addEventListener('touchstart',function(e){
+  if(!p2.on)return;
+  e.preventDefault();
+  for(var i=0;i<e.touches.length;i++){
+    if(!isButtonTouch(e.touches[i])){p2.rocket.tx=e.touches[i].clientX;break;}
+  }
+},{passive:false});
 document.addEventListener('mousemove',function(e){if(p2.on)p2.rocket.tx=e.clientX;});
 document.addEventListener('keydown',function(e){
   if(!p2.on)return;
