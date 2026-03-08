@@ -397,6 +397,21 @@ function addXP(n) {
   el.style.left = innerWidth/2-30+'px'; el.style.top = innerHeight/2+'px';
   document.body.appendChild(el); setTimeout(function(){ el.remove(); }, 1300); updCrew();
 }
+function getRecord(player) {
+  try { return JSON.parse(localStorage.getItem('rec_'+player)||'null'); } catch(e){ return null; }
+}
+function saveRecord(player, score, kills, won) {
+  var prev=getRecord(player)||{xp:0,kills:0,wins:0,plays:0};
+  var rec={xp:Math.max(prev.xp,score), kills:Math.max(prev.kills,kills), wins:prev.wins+(won?1:0), plays:prev.plays+1};
+  try { localStorage.setItem('rec_'+player, JSON.stringify(rec)); } catch(e){}
+  return rec;
+}
+function recordHTML(rec, score, isNew) {
+  var best='🏆 '+t('Recorde: ','Récord: ')+'<b>'+rec.xp+'</b> ⭐';
+  if(isNew) best='🏆 '+t('NOVO RECORDE! ','¡NUEVO RÉCORD! ')+'<b>'+rec.xp+'</b> ⭐ 🎉';
+  return '<div style="margin:6px 0;font-size:.95rem;opacity:.85">'+best+'</div>'+
+    '<div style="font-size:.8rem;opacity:.5">'+t('Jogadas: ','Jugadas: ')+rec.plays+' · '+t('Vitórias: ','Victorias: ')+rec.wins+'</div>';
+}
 function party() {
   var em = ['⭐','✨','🌟','💫','🎉'];
   for (var i = 0; i < 5; i++) {
@@ -1382,9 +1397,15 @@ function p2Win() {
   p2.on=false; p2StopBGM(); snd('win'); addXP(50); party();
   document.getElementById('crew').classList.remove('on');
   var nm=P==='nina'?'Ninna':'Julia';
+  var prev=getRecord(P); var isNew=!prev||xp>prev.xp;
+  var rec=saveRecord(P,xp,p2.kills,true);
   document.getElementById('final').innerHTML=
     '<canvas id="winCv"></canvas>'+
     '<div style="position:fixed;bottom:20px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:10">'+
+      '<div style="background:rgba(0,0,0,.55);border-radius:16px;padding:10px 20px;text-align:center;border:2px solid rgba(255,217,61,.3)">'+
+        '<div style="font-size:1.3rem;font-weight:800;color:#ffd93d">⭐ '+xp+' '+t('pontos','puntos')+'</div>'+
+        recordHTML(rec,xp,isNew)+
+      '</div>'+
       '<button class="f-btn" id="p2replay" style="font-size:1.2rem;padding:14px 32px">'+t('🚀 Jogar de novo!','🚀 ¡Jugar de nuevo!')+'</button>'+
       '<button class="f-btn" style="background:rgba(255,255,255,.12);font-size:0.95rem;padding:10px 24px" id="p2back">'+t('← Fases','← Fases')+'</button>'+
     '</div>';
@@ -1624,9 +1645,15 @@ function p2Over() {
   p2.on=false; p2StopBGM();
   document.getElementById('crew').classList.remove('on');
   var nm=P==='nina'?'Ninna':'Julia';
+  var prev=getRecord(P); var isNew=!prev||xp>prev.xp;
+  var rec=saveRecord(P,xp,p2.kills,false);
   document.getElementById('final').innerHTML=
     '<canvas id="loseCv"></canvas>'+
     '<div style="position:fixed;bottom:20px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:10">'+
+      '<div style="background:rgba(0,0,0,.55);border-radius:16px;padding:10px 20px;text-align:center;border:2px solid rgba(255,255,255,.1)">'+
+        '<div style="font-size:1.3rem;font-weight:800;color:#ffd93d">⭐ '+xp+' '+t('pontos','puntos')+'</div>'+
+        recordHTML(rec,xp,isNew)+
+      '</div>'+
       '<button class="f-btn" id="p2retry">'+t('🚀 Tentar de novo!','🚀 ¡Intentar de nuevo!')+'</button>'+
       '<button class="f-btn" style="background:rgba(255,255,255,.08)" id="p2back2">'+t('← Fases','← Fases')+'</button>'+
     '</div>';
