@@ -87,7 +87,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
 <div id="welcome" class="scr on">
   <div class="ws">🚀</div>
   <div class="wt">Viagem nas Estrelas</div>
-  <div class="wu">Um jogo feito só pra Nina e Julia!</div>
+  <div class="wu">Um jogo feito só pra Ninna e Julia!</div>
   <button class="btn-main" id="startBtn">Começar ✨</button>
 </div>
 
@@ -96,7 +96,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
 <div id="pick" class="scr">
   <div class="pk-t">Quem é você? 🧑‍🚀</div>
   <div class="pk-r">
-    <div class="pk-c" id="cN"><div id="aN"></div><div class="pk-n">Nina</div><div class="pk-f">🇦🇷</div></div>
+    <div class="pk-c" id="cN"><div id="aN"></div><div class="pk-n">Ninna</div><div class="pk-f">🇦🇷</div></div>
     <div class="pk-c" id="cJ"><div id="aJ"></div><div class="pk-n">Julia</div><div class="pk-f">🇧🇷</div></div>
   </div>
   <button class="pk-g" id="pkG">🚀</button>
@@ -275,7 +275,7 @@ var introSlides = [
   {emoji:'🌞', text:'Sabe aquele calorzinho gostoso que vocês sentem?', sub:'Vem de muito, muito longe...'},
   {emoji:'☀️', text:'Ele vem do SOL!', sub:'Uma estrela gigante feita de fogo!'},
   {emoji:'🪐', text:'E ao redor do Sol giram planetas...', sub:'Cada um diferente e especial!'},
-  {emoji:'🌍', text:'Um deles é a Terra — a casa de vocês!', sub:'🇦🇷 Nina e Julia 🇧🇷 moram aqui!'},
+  {emoji:'🌍', text:'Um deles é a Terra — a casa de vocês!', sub:'🇦🇷 Ninna e Julia 🇧🇷 moram aqui!'},
   {emoji:'🚀', text:'Hoje vocês vão viajar pelo espaço!', sub:'Conhecer cada planeta de pertinho!'},
   {emoji:'⭐', text:'Preparadas, astronautas?', sub:''}
 ];
@@ -360,10 +360,10 @@ function updCrew() { document.getElementById('crew').innerHTML = '<span>'+ava(P,
 // ============== DATA ==============
 var ST = [
 {name:{pt:'Sol',es:'Sol'},color:'#ffd93d',glow:'rgba(255,217,61,.3)',grad:'radial-gradient(circle at 38% 38%,#fffbe0,#ffd93d 35%,#ff8a5c 75%,#cc4400)',sz:.35,ring:false,
- msg:{nina:{es:'¡Nina, mirá el Sol! ☀️ ¡Caben 1 MILLÓN de Tierras adentro! ¡Esto no lo ves en ningún Roblox! 😜'},julia:{pt:'Julia, olha o Sol! ☀️ Cabem 1 MILHÃO de Terras dentro dele! Isso é de verdade! 🤯'}},
+ msg:{nina:{es:'¡Ninna, mirá el Sol! ☀️ ¡Caben 1 MILLÓN de Tierras adentro! ¡Esto no lo ves en ningún Roblox! 😜'},julia:{pt:'Julia, olha o Sol! ☀️ Cabem 1 MILHÃO de Terras dentro dele! Isso é de verdade! 🤯'}},
  quiz:{q:{pt:'O Sol é uma...',es:'El Sol es una...'},o:[{i:'⭐',t:{pt:'Estrela!',es:'¡Estrella!'}},{i:'🪐',t:{pt:'Planeta',es:'Planeta'}},{i:'🌙',t:{pt:'Lua',es:'Luna'}}],c:0,fb:{pt:'Estrela gigante! ⭐',es:'¡Estrella gigante! ⭐'}}},
 {name:{pt:'Terra',es:'Tierra'},color:'#4a9eff',glow:'rgba(74,158,255,.3)',grad:'radial-gradient(circle at 35% 35%,#8fd4ff,#4a9eff 45%,#1a5faa)',sz:.16,ring:false,
- msg:{nina:{es:'¡La Tierra! 🌍 Vos en Argentina 🇦🇷 y Julia en Brasil 🇧🇷 — desde acá arriba están al ladito! Más lindo que cualquier mapa de Roblox 😉'},julia:{pt:'A Terra! 🌍 Você no Brasil 🇧🇷 e a Nina na Argentina 🇦🇷 — daqui de cima ficam pertinho! Imagina ver isso de verdade! 🤩'}},
+ msg:{nina:{es:'¡La Tierra! 🌍 Vos en Argentina 🇦🇷 y Julia en Brasil 🇧🇷 — desde acá arriba están al ladito! Más lindo que cualquier mapa de Roblox 😉'},julia:{pt:'A Terra! 🌍 Você no Brasil 🇧🇷 e a Ninna na Argentina 🇦🇷 — daqui de cima ficam pertinho! Imagina ver isso de verdade! 🤩'}},
  quiz:{q:{pt:'1 volta da Terra no Sol =',es:'1 vuelta de la Tierra al Sol ='},o:[{i:'🎂',t:{pt:'1 ano!',es:'¡1 año!'}},{i:'📅',t:{pt:'1 mês',es:'1 mes'}},{i:'⏱️',t:{pt:'1 semana',es:'1 semana'}}],c:0,fb:{pt:'1 volta = 1 aniversário! 🎂',es:'¡1 vuelta = 1 cumpleaños! 🎂'}}},
 {name:{pt:'Marte',es:'Marte'},color:'#e74c3c',glow:'rgba(231,76,60,.25)',grad:'radial-gradient(circle at 35% 35%,#ff9977,#e74c3c 50%,#8b2015)',sz:.12,ring:false,
  msg:{nina:{es:'¡Marte! 🔴 ¡Rojo porque está todo OXIDADO! ¡Como bici bajo la lluvia! ¡Y hay robots ahí AHORA! 🤖'},julia:{pt:'Marte! 🔴 Vermelho porque é ENFERRUJADO! Tipo bicicleta na chuva! E tem robôs lá AGORA! 🤖'}},
@@ -418,7 +418,7 @@ document.addEventListener('touchend', function(e){
 function goQ() { qI = 0; qOk = 0; nQ(); }
 function nQ() {
   if (qI >= ST.length) { showF(); return; }
-  var s = ST[qI], nm = P === 'nina' ? 'Nina' : 'Julia';
+  var s = ST[qI], nm = P === 'nina' ? 'Ninna' : 'Julia';
   var optH = ''; for (var i = 0; i < s.quiz.o.length; i++) {
     optH += '<div class="qo" data-i="'+i+'"><span style="font-size:1.4rem">'+s.quiz.o[i].i+'</span> '+s.quiz.o[i].t[L]+'</div>';
   }
@@ -454,9 +454,9 @@ function showF() {
     '<div class="f-big">'+em+'</div>'+
     '<div class="f-t">'+t('Missão Completa!','¡Misión Completa!')+'</div>'+
     '<div class="f-s">'+qOk+'/'+ST.length+' ✅ · '+xp+' ⭐</div>'+
-    '<div class="f-bx"><div class="f-bx-t">🎓 '+t('Certificado Espacial','Certificado Espacial')+'</div><div class="f-bx-n">🇦🇷 Nina & Julia 🇧🇷</div></div>'+
+    '<div class="f-bx"><div class="f-bx-t">🎓 '+t('Certificado Espacial','Certificado Espacial')+'</div><div class="f-bx-n">🇦🇷 Ninna & Julia 🇧🇷</div></div>'+
     '<div class="f-c">🌙 '+t('Agora guarda o celular e olha pro céu de verdade! As estrelas estão lá em cima te esperando! ✨','¡Ahora guardá el celu y mirá el cielo de verdad! ¡Las estrellas están allá arriba esperándote! ✨')+'</div>'+
-    '<div class="f-c" style="border-color:rgba(255,217,61,.22)">🛠️ '+t('Sabe o que é mais legal que jogar? CRIAR! Na próxima fase, você e a Nina vão inventar planetas juntas — com papel, lápis e imaginação! 🎨🚀','¿Sabés qué es más genial que jugar? ¡CREAR! En la próxima fase, vos y Julia van a inventar planetas juntas — ¡con papel, lápices y mucha imaginación! 🎨🚀')+'</div>'+
+    '<div class="f-c" style="border-color:rgba(255,217,61,.22)">🛠️ '+t('Sabe o que é mais legal que jogar? CRIAR! Na próxima fase, você e a Ninna vão inventar planetas juntas — com papel, lápis e imaginação! 🎨🚀','¿Sabés qué es más genial que jugar? ¡CREAR! En la próxima fase, vos y Julia van a inventar planetas juntas — ¡con papel, lápices y mucha imaginación! 🎨🚀')+'</div>'+
     '<div class="f-l">'+t('Feito com muito amor pelo Tio Du 💜','Hecho con mucho amor por el Tío Du 💜')+'</div>'+
     '<button class="f-btn" id="replayBtn">'+t('🔄 De novo!','🔄 ¡De nuevo!')+'</button>';
   document.getElementById('replayBtn').addEventListener('click', function(){ location.reload(); });
