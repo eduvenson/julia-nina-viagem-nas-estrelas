@@ -312,7 +312,7 @@ function showIntroSlide(i) {
   var dots = document.querySelectorAll('.intro-dot');
   for (var j = 0; j < dots.length; j++) { if(j===i) dots[j].classList.add('active'); else dots[j].classList.remove('active'); }
   clearTimeout(introTimer);
-  introTimer = setTimeout(function(){ slide.classList.remove('show'); setTimeout(function(){ showIntroSlide(i+1); }, 400); }, 2800);
+  introTimer = setTimeout(function(){ slide.classList.remove('show'); setTimeout(function(){ showIntroSlide(i+1); }, 400); }, 6000);
 }
 
 function endIntro() { clearTimeout(introTimer); scr('pick'); }
