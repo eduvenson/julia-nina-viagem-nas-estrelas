@@ -24,7 +24,7 @@ preservadas. O pedido inclui publicação após validação e preflight independ
 
 ## Evidência
 
-- `npm test`: 39 testes passam, incluindo troca sem teleporte, separação da amiga,
+- `npm test`: 40 testes passam, incluindo troca sem teleporte, separação da amiga,
   busca com ida antes da recompensa, bônus sem duplicação, arco com altura e rampa.
 - `CORE_UNDER_TEST=/tmp/nina-julia-r4-before/core.mjs node --test --test-name-pattern='regressão R4' tests/round4.test.mjs`:
   as duas regressões falham no motor anterior. Cópia isolada, sem reverter o worktree.
@@ -55,3 +55,11 @@ para variedade dos companheiros. Foram consultadas descrições, não sessões j
 Sem teste físico no iPhone ou pesquisa de usabilidade com as crianças; os testes mobile
 usam navegadores no Mac com viewport/toque emulados. A diversão e a dificuldade percebidas
 continuam dependendo da próxima rodada da Nina. Não foram publicadas fotos privadas.
+
+## Correção do preflight
+O revisor reproduziu cancelamento de pesca ao trocar personagem durante o lançamento.
+Agora o motor recusa troca em waiting/bite/reeling e o botão mostra “pescando”, desabilitado
+até concluir a ação. Teste novo cobre as três fases sem alterar posição ou perder a vara.
+Contrafactual isolado contra o candidato anterior falha; o candidato corrigido passa.
+O teste mobile também lança, fisga e recolhe um peixe com comandos reais, verificando
+a troca bloqueada durante a ação e liberada no fim.

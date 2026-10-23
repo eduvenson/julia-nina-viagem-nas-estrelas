@@ -112,7 +112,7 @@ export function act(s) {
 }
 // A troca transfere o controle para a posição da amiga, sem trocar os corpos de lugar.
 export function swapLeader(s) {
-  if (s.mode !== 'playing' || s.stage.type === 'space') return false;
+  if (s.mode !== 'playing' || s.stage.type === 'space' || s.stage.type === 'fish' && s.fish.phase !== 'idle') return false;
   [s.x, s.helper.x] = [s.helper.x, s.x]; [s.d, s.helper.d] = [s.helper.d, s.d];
   [s.y, s.helper.y] = [s.helper.y, s.y]; s.vy = 0;
   s.leader = s.leader === 'julia' ? 'nina' : 'julia'; return true;

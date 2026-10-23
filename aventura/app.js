@@ -154,8 +154,11 @@ function updateHud() {
   $('hud').classList.toggle('low-health', state.hearts === 1);
   $('hearts').setAttribute('aria-label', t([`${state.hearts} corações`, `${state.hearts} corazones`]));
   const leaderName = state.leader === 'julia' ? t(['Júlia', 'Julia']) : 'Nina';
-  $('leader').textContent = t([`Você: ${leaderName}`, `Vos: ${leaderName}`]);
-  $('swap').setAttribute('aria-label', t([`Você controla ${leaderName}. Trocar personagem`, `Controlás a ${leaderName}. Cambiar personaje`]));
+  const fishingBusy = stage.type === 'fish' && state.fish.phase !== 'idle';
+  $('swap').disabled = stage.type === 'space' || fishingBusy;
+  $('leader').textContent = fishingBusy ? t([`${leaderName} · pescando`, `${leaderName} · pescando`]) : t([`Você: ${leaderName}`, `Vos: ${leaderName}`]);
+  $('swap').title = fishingBusy ? t(['Termine a pescaria para trocar', 'Terminá de pescar para cambiar']) : t(['Trocar personagem', 'Cambiar personaje']);
+  $('swap').setAttribute('aria-label', fishingBusy ? t(['Termine a pescaria para trocar personagem', 'Terminá de pescar para cambiar de personaje']) : t([`Você controla ${leaderName}. Trocar personagem`, `Controlás a ${leaderName}. Cambiar personaje`]));
   const fishing = stage.type === 'fish'; $('fish-status').hidden = !fishing || phase !== 'play';
   $('jump').hidden = stage.type === 'space'; $('joystick').hidden = false;
   $('action-label').textContent = fishing ? t(state.fish.phase === 'bite' ? ['Puxar agora!', '¡Tirar ahora!'] : state.fish.phase === 'reeling' ? ['Olha o peixe!', '¡Mirá el pez!'] : state.fish.phase === 'waiting' ? ['Esperar…', 'Esperar…'] : stage.action) : stage.type === 'space' ? t(['Atirar', 'Disparar']) : t(stage.action);
@@ -196,7 +199,7 @@ async function unlockAudio() {
   const ok = await music.unlock();
   syncSound(); return ok;
 }
-function action() { if (phase === 'party' || phase === 'play' && $('objective-detail').hidden) act(state); }
+function action() { if (phase === 'party' || phase === 'play' && $('objective-detail').hidden) { act(state); updateHud(); } }
 function jumpAction() { if (phase === 'play' && $('objective-detail').hidden) jump(state); }
 function inputs() {
   const x = (keys.has('d') || keys.has('arrowright') ? 1 : 0) - (keys.has('a') || keys.has('arrowleft') ? 1 : 0) + joystick.x;

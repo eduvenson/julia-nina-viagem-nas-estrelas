@@ -37,3 +37,12 @@ test('dogs buscam automaticamente ao se aproximar, com ida antes da recompensa',
  for(let n=0;n<75;n++)tick(s,{},.02);
  assert.equal(s.bonusCount,1);assert.equal(s.events.filter(e=>e.type==='dogToy').length,1);
 });
+
+test('regressão R4: troca não abandona a vara durante espera, mordida ou recolhimento', () => {
+ for (const phase of ['waiting','bite','reeling']) {
+  const s=makeState(4);s.d=6;s.fish={phase,timer:1,spot:0};const position=[s.x,s.d,s.helper.x,s.helper.d];
+  assert.equal(core.swapLeader(s),false);assert.equal(s.leader,'julia');assert.deepEqual([s.x,s.d,s.helper.x,s.helper.d],position);
+  tick(s,{},.02);assert.equal(s.fish.phase,phase);assert.ok(!s.events.some(e=>e.type==='findSpot'));
+ }
+ const idle=makeState(4);assert.equal(core.swapLeader(idle),true);
+});
