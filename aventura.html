@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="aventura/style.css">
 </head>
 <body>
+  <audio id="soundtrack" preload="auto" loop playsinline hidden></audio>
   <canvas id="world" aria-label="Mundo 3D de Nina e Júlia"></canvas>
   <div id="loading" role="status"><span class="loading-star"></span><p>Preparando uma aventura entre amigas…</p></div>
   <main id="welcome" hidden>
@@ -21,6 +22,7 @@
       <p class="lead" data-i18n="lead">O presente da Nina para os 8 anos da Júlia. Uma nova aventura 3D, com as duas e seus cinco dogs.</p>
       <div class="start-actions"><button id="start" class="primary" data-i18n="start">Vamos juntas <span aria-hidden="true">↗</span></button><button id="resume" class="secondary" hidden data-i18n="resume">Continuar aventura</button></div>
       <p class="small" data-i18n="hint">Mova, pule, explore. A amiga e os dogs vão com você.</p>
+      <div class="welcome-audio"><button id="welcome-sound" class="text-button">Ativar música</button><span id="sound-status" role="status">O som começa com seu toque.</span></div>
     </div>
     <div class="welcome-bottom"><span data-i18n="authorship">Uma história da Nina · Feita com o Tio Du</span><div class="language"><button data-lang="pt" aria-label="Português" aria-pressed="true">PT</button><button data-lang="es" aria-label="Español" aria-pressed="false">ES</button></div></div>
   </main>
@@ -29,7 +31,7 @@
   </section>
   <section id="hud" hidden aria-label="Aventura">
     <header class="game-header"><div><p id="place"></p><h1 id="stage-title"></h1></div><div class="header-actions"><button id="sound" class="icon-button" aria-label="Desligar música" title="Música"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13M9 9l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></svg></button><button id="pause" class="icon-button" aria-label="Pausar aventura"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg></button></div></header>
-    <div class="mission"><div class="mission-top"><span id="objective"></span><strong id="counter"></strong></div><div class="progress-track"><div id="progress"></div></div><div class="mission-bottom"><span id="hearts" aria-label="5 corações"></span><span id="stage-number"></span></div></div>
+    <div class="mission"><div class="mission-top"><span id="objective" hidden></span><strong id="counter"></strong></div><div class="mission-bottom"><span id="stage-number"></span><span id="hearts" aria-label="3 corações"></span><span id="mission-time" aria-label="Tempo restante"></span></div><button id="objective-toggle" aria-expanded="false" aria-controls="objective-detail" aria-label="Ver objetivo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v.1"/></svg></button><div class="progress-track"><div id="progress"></div></div><p id="objective-detail" hidden></p></div>
     <div id="target-pointer" hidden aria-hidden="true">↓</div>
     <div id="toast" role="status" aria-live="polite"></div>
     <div id="fish-status" hidden aria-live="polite"><strong id="fish-text"></strong><div class="fishing-meter"><span id="fish-meter"></span></div></div>
@@ -45,11 +47,13 @@
     <div class="panel"><p id="panel-place"></p><h2 id="panel-title"></h2><p id="panel-text"></p><div id="settings" hidden>
       <label><span data-i18n="music">Música da aventura</span><input id="music-toggle" type="checkbox" checked></label>
       <label><span data-i18n="effects">Efeitos sonoros</span><input id="effects-toggle" type="checkbox" checked></label>
-      <label><span data-i18n="volume">Volume</span><input id="volume" type="range" min="0" max="100" value="55"></label>
+      <label id="volume-row"><span data-i18n="volume">Volume</span><input id="volume" type="range" min="0" max="100" value="55"></label><p id="ios-volume" hidden data-i18n="iosVolume">No iPhone, ajuste o volume pelos botões do aparelho.</p>
       <div class="settings-row"><span data-i18n="language">Idioma</span><div class="language"><button data-lang="pt" aria-label="Português">PT</button><button data-lang="es" aria-label="Español">ES</button></div></div>
       <p class="control-guide" data-i18n="controlGuide">No celular: analógico à esquerda, pulo e ação à direita. Arraste o cenário para girar a câmera. No computador: WASD ou setas, espaço para pular e E para agir.</p>
     </div><button id="panel-primary" class="primary"></button><button id="panel-secondary" class="secondary"></button><button id="panel-home" class="text-button" data-i18n="home">Voltar ao início</button></div>
   </section>
+  <button id="audio-recover" hidden>Toque para ouvir</button>
+  <section id="rotate-hint" hidden role="dialog" aria-modal="true" aria-labelledby="rotate-title"><div class="rotate-card"><svg viewBox="0 0 120 100" aria-hidden="true"><rect x="36" y="12" width="48" height="76" rx="8"/><path d="M47 74h26M18 51a43 43 0 0 1 73-30M91 7v16H75M102 49a43 43 0 0 1-73 30M29 93V77h16"/></svg><h2 id="rotate-title" data-i18n="rotateTitle">Vire o celular para jogar</h2><p data-i18n="rotateHelp">Na horizontal dá para ver os caminhos e jogar com os dois polegares. Se não girar, desative o bloqueio de rotação.</p><button id="portrait-continue" class="secondary" data-i18n="portraitContinue">Continuar na vertical</button></div></section>
   <section id="ending" hidden>
     <div class="ending-copy"><p class="birthday-age" data-i18n="age">8 anos de aventuras</p><h1 data-i18n="birthday">Feliz aniversário,<br><span>Júlia!</span></h1><p class="dedication" data-i18n="dedication">Essa aventura é meu presente para você.<br>Com carinho, Nina.</p><div class="ending-actions"><button id="celebrate" class="primary" data-i18n="celebrate">Mais confete!</button><button id="replay" class="secondary" data-i18n="replay">Jogar de novo juntas</button></div><a href="index.html" class="text-button" data-i18n="old">← Fases anteriores</a></div>
     <p class="dog-roll">Marcha · Chucha · Luca · Jujuba · Bidu</p>

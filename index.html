@@ -220,7 +220,11 @@ var audioUnlocked = false;
 var silentWav = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
 
 function unlockAudio() {
-  if (audioUnlocked) return;
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch(e) {}
+  if (audioUnlocked) {
+    if (AC && AC.state !== 'running' && AC.state !== 'closed') AC.resume().catch(function(){});
+    return;
+  }
   try {
     // Method 1: HTML Audio element (iOS needs this)
     silentAudio = new Audio(silentWav);

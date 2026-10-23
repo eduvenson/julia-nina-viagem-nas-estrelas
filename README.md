@@ -54,7 +54,7 @@ Three.js e a fonte Baloo estão incluídos com suas licenças.
 Desenvolvimento: `npm ci`; `npm test` para as regras do jogo; `npm run test:e2e`,
 `npm run test:edge` e `npm run inspect` com o servidor local ativo e Chrome instalado.
 `npm run vendor` reproduz os arquivos locais do Three.js. Consulte
-[o plano](PLANO-IMPLEMENTACAO.md) e [as evidências atuais](VALIDACAO-RODADA2.md).
+[o plano](PLANO-IMPLEMENTACAO.md) e [as evidências atuais](VALIDACAO-RODADA3.md).
 
 ---
 
@@ -66,7 +66,7 @@ Uma viagem pelo sistema solar feita **para crianças, por crianças.**
 - 🧠 Quiz espacial no final pra testar o que aprendeu
 - 🇧🇷🇦🇷 Disponível em **português e espanhol** — a Nina joga em espanhol, a Julia em português
 - ⭐ Sistema de XP e conquistas espaciais
-- 🎵 Música feita com Web Audio API (zero bibliotecas, zero assets)
+- 🎵 Música original: Web Audio nas fases clássicas e reprodução nativa local na aventura 3D
 - 📱 Mobile-first, funciona offline depois de carregar
 
 ---
@@ -130,3 +130,16 @@ A vara, a linha, o peixe mordendo, a fisgada e a devolução são animados em 3D
 
 `node scripts/fishing-visual.mjs` verifica esses estados renderizados no navegador.
 Referências de animação, IA e desempenho: [pesquisa da rodada](REFERENCIAS-RODADA2.md).
+
+## Rodada 3 — celular e desafio
+
+A nova aventura orienta a virar o celular, tem HUD compacto e objetivo completo por toque.
+Três corações, cronômetro, perigos móveis e três ondas de naves permitem perder e tentar
+o trecho de novo. A companheira ajuda sem fornecer escudo automático.
+
+A trilha original é reproduzida por mídia nativa para melhor compatibilidade no iPhone.
+Ative pelo botão de música ou pelo toque inicial; se houver interrupção, use “Toque para ouvir”.
+No iPhone, o volume é ajustado pelos botões do aparelho. As fases antigas são preservadas.
+
+`npm run test:mobile` usa Chrome instalado e o WebKit de teste (`npx playwright install webkit`).
+`npm run music` renderiza os MP3 originais localmente e requer FFmpeg; não é necessário para jogar.

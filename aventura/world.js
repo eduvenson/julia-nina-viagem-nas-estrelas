@@ -293,6 +293,7 @@ export class World {
     this.camera = new THREE.PerspectiveCamera(46, 1, .2, 240);
     this.yaw = 0; this.pitch = .35; this.follow = new THREE.Vector3(); this.project = new THREE.Vector3();
     this.scratch = new THREE.Vector3(); this.center = new THREE.Vector3(); this.batchMatrix = new THREE.Matrix4(); this.hiddenMatrix = new THREE.Matrix4().makeScale(0, 0, 0);
+    this.reducedMotion = matchMedia('(prefers-reduced-motion:reduce)').matches;
     this.scene = new THREE.Scene();
     this.resize();
   }
@@ -367,6 +368,7 @@ export class World {
     this.obstacleMeshes = state.obstacles.map(o => {
       const g = group(this.root, o.x, 0, -o.d);
       if (stage.type === 'space') mesh(g, geometry('rock', () => new THREE.IcosahedronGeometry(1, 0)), '#8c87a0', 0, 2, 0, 1, 1, 1);
+      else if (stage.type === 'skate' && o.kind === 'ball') { ball(g, '#e9ba54', 0, .55, 0, .55); const stripe = mesh(g, geometry('ball-stripe', () => new THREE.TorusGeometry(.55, .035, 6, 16)), '#4b9eae', 0, .55, 0); stripe.rotation.y = Math.PI / 2; }
       else if (stage.type === 'skate') { box(g, '#fff2d5', 0, .05, 0, 1.3, .1, 1.3); cylinder(g, '#ef9858', 0, .65, 0, .55, 1.2, .08, 4); }
       else if (stage.type === 'run') { box(g, '#b492ce', 0, .45, 0, 1.8, .9, 1.1); box(g, '#f9db97', 0, .95, 0, 1.8, .1, 1.1, true); }
       else { box(g, '#b38d65', 0, .45, 0, 1.6, .9, 1.2); }
@@ -715,10 +717,10 @@ export class World {
         to: new THREE.Vector3(t?.x ?? this.state.x, 2, -(t?.d ?? this.state.d + 10)),
         obj: ball(this.root, '#9de8e4', this.state.x, 2, -this.state.d, .45, true) });
     }
-    if (['collect', 'caught', 'hit', 'celebrate', 'complete'].includes(event.type)) {
+    if (['collect', 'caught', 'hit', 'celebrate', 'complete', 'defeat', 'bump'].includes(event.type)) {
       const t = this.state.targets[event.target];
       const x = t?.x ?? this.state.x, z = -(t?.d ?? this.state.d);
-      const count = ['celebrate', 'complete'].includes(event.type) ? 50 : 12;
+      const count = this.reducedMotion ? 6 : ['celebrate', 'complete', 'defeat'].includes(event.type) ? 50 : event.type === 'bump' ? 8 : 12;
       for (let i = 0; i < count; i++) {
         const obj = box(this.root, ['#ffd78c', '#f68fb5', '#86d7cc'][i % 3], x, 2, z, .12, .2, .08, true);
         const a = i * 2.399;
@@ -733,6 +735,7 @@ export class World {
     const friend = s.leader === 'julia' ? this.nina : this.julia;
     if (this.ship) {
       this.ship.position.set(s.x, .15 + Math.sin(time * 2) * .08, -s.d);
+      this.ship.scale.setScalar(s.visualDefeat ? Math.max(.01, 1 - s.visualDefeat * 1.4) : 1);
       this.ship.rotation.z += (-(input.x || 0) * .16 - this.ship.rotation.z) * Math.min(1, dt * 6);
       this.ship.rotation.x = (input.forward || 0) * .045;
       this.people.forEach((p, i) => {
@@ -764,7 +767,7 @@ export class World {
         p.eyelids.forEach(lid => { lid.visible = (time + (p.name === 'nina' ? 2.1 : 0)) % 4.7 < .15; });
         if (p.head.userData.pony) p.head.userData.pony.rotation.x = -.3 + motion.bob * 3 + Math.sin(time * 6) * .045;
         if (follower && s.helper.action === 'shoot' && time - s.playerFiredAt < 4) p.limbs[2].rotation.x = -1.15;
-        p.root.visible = !(s.invincible > 0 && Math.floor(time * 12) % 2);
+        p.root.visible = !s.visualDefeat || s.visualDefeat < .8;
       });
       this.dogs.forEach((d, i) => {
         const pose = dogPose(i, time, moving, s.dogCallUntil > time); d.activity = pose.activity;
@@ -821,6 +824,7 @@ export class World {
       } else { obj.rotation.y = time * 1.4; obj.position.y = 1.7 + Math.sin(time * 3 + i) * .2; }
     });
     this.spotMarkers.forEach((m, i) => { const p = s.fishingSpots[i]; m.ring.visible = p.caught < p.quota; m.sign.visible = p.caught < p.quota; m.ring.rotation.z = time * .4; });
+    s.obstacles.forEach((o, i) => { const mesh = this.obstacleMeshes[i]; mesh.position.x = o.x; if (s.stage.type === 'space') { mesh.rotation.y = time * .25 + i; mesh.rotation.z = Math.sin(time + i) * .15; } else if (o.kind === 'ball') mesh.rotation.z = -o.x * 1.3; });
     this.fountainJets.forEach((jet, i) => { jet.scale.y = 1.3 + Math.sin(time * 2.2 + i * .7) * .7; jet.position.y = .5 + jet.scale.y; });
     if (this.float) { const p = s.fishingSpots[s.fish.spot] || s.fishingSpots.find(p => p.caught < p.quota) || s.fishingSpots[2]; this.float.position.set(p.x + 2, .1, -p.d - .8); }
     if (this.float) this.float.position.y = .1 + Math.sin(time * (s.fish.phase === 'bite' ? 24 : 3)) * .13;
@@ -856,6 +860,7 @@ export class World {
     if (showcase && mobile) this.camera.setViewOffset(innerWidth, innerHeight, 0, innerHeight * .19, innerWidth, innerHeight);
     else this.camera.clearViewOffset();
     this.camera.lookAt(this.follow);
+    if (!this.reducedMotion && s.damageFlash > 0 && !s.visualDefeat) { this.camera.position.x += Math.sin(time * 24) * s.damageFlash * .35; this.camera.position.y += Math.cos(time * 21) * s.damageFlash * .2; }
     this.sky.position.copy(this.camera.position);
     this.sun.position.set(s.x - 14, 25, -s.d + 12); this.sun.target.position.set(s.x, 0, -s.d);
     this.updateAnimationBatches();

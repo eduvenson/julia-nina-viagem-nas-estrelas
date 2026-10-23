@@ -33,7 +33,7 @@ async function moveTo(x, d) {
     if (Math.abs(dx) < .45 && Math.abs(dd) < .45) { await release(1); return; }
     const len = Math.max(.9, Math.hypot(dx, dd));
     await touch(1, r.x + r.width / 2 + dx / len * 32, r.y + r.height / 2 - dd / len * 32);
-    const danger = s.obstacles.some(o => Math.abs(o.x - s.x) < 1.8 && o.d - s.d > -1 && o.d - s.d < 3.5);
+    const danger = s.obstacles.some(o => Math.abs(o.x - s.x) < 2 && o.d - s.d > -.4 && o.d - s.d < (s.index === 5 ? 3.2 : 2.4));
     if (danger && s.y === 0 && Date.now() - lastJump > 600 && s.index !== 1) { await tap('jump'); lastJump = Date.now(); }
     await page.waitForTimeout(75);
   }
@@ -59,7 +59,7 @@ try {
   await page.locator('[data-lang="pt"]').last().tap(); await page.locator('#panel-primary').tap();
   for (let index = 0; index < 6; index++) {
     let s = await snapshot(); assert.equal(s.index, index); console.log(`JOGANDO ${index}: ${await page.locator('#stage-title').textContent()}`);
-    await page.waitForFunction(() => window.aventura.snapshot().audio.energy > .0001);
+    await page.waitForFunction(() => window.aventura.snapshot().audio.playback === 'playing' && window.aventura.snapshot().audio.currentTime > .05);
     if ([0, 2, 5].includes(index)) {
       if (index === 2 || index === 5) await tap('action');
       const targets = s.targets;
@@ -69,12 +69,19 @@ try {
       // Espaço contínuo no voo e botão de ação mantido no toque em Dubai.
       if (index === 1) await page.keyboard.down(' ');
       else { const r = await page.locator('#action').boundingBox(); await touch(2, r.x + r.width / 2, r.y + r.height / 2); }
-      for (let n = 0; n < 280; n++) {
+      for (let n = 0; n < 500; n++) {
         s = await snapshot(); if (s.mode === 'complete') break;
         assert.equal(s.mode, 'playing', 'Batalha permite vencer sem ficar travada');
-        if (index === 3 && s.d < 9) {
-          const r = await page.locator('#joystick').boundingBox(); await touch(1, r.x + r.width / 2, r.y + r.height / 2 - 30);
-        } else await release(1);
+        const r = await page.locator('#joystick').boundingBox();
+        const desiredX = Math.sin(s.time * (index === 1 ? 1.15 : .85)) * (index === 1 ? 5.8 : 4.5);
+        const worldX = Math.max(-1, Math.min(1, (desiredX - s.x) * 2));
+        const worldForward = index === 3 ? Math.max(-1, Math.min(1, (7 - s.d) * 2)) : 0;
+        const screenX = worldX * Math.cos(s.yaw) + worldForward * Math.sin(s.yaw);
+        const screenForward = -worldX * Math.sin(s.yaw) + worldForward * Math.cos(s.yaw);
+        await touch(1, r.x + r.width / 2 + screenX * 34, r.y + r.height / 2 - screenForward * 34);
+        if (index === 3 && s.y === 0 && n % 12 === 0) {
+          await release(2); await tap('jump'); const action = await page.locator('#action').boundingBox(); await touch(2, action.x + action.width / 2, action.y + action.height / 2);
+        }
         await page.waitForTimeout(80);
       }
       await page.keyboard.up(' '); await release(1); await release(2);
@@ -97,7 +104,7 @@ try {
       await jumpGap(-2,40,43.3); await moveTo(-2,49); await moveTo(0,52); await catchFish(1);
     }
     await waitPhase('panel'); s = await snapshot(); assert.equal(s.mode, 'complete');
-    assert.equal(s.count, [3, 6, 3, 6, 5, 5][index]);
+    assert.equal(s.count, [3, 9, 3, 6, 5, 5][index]);
     await page.screenshot({ path: `test-results/journey/${index}-concluido.png` });
     console.log(`CONCLUÍDO ${index}: ${s.count} objetivos, ${s.hearts} corações`);
     await page.locator('#panel-primary').tap();
@@ -105,7 +112,7 @@ try {
   }
   await waitPhase('party'); assert.equal((await snapshot()).index, 6);
   await page.locator('#celebrate').tap(); await page.screenshot({ path: 'test-results/journey/aniversario-mobile.png' });
-  const audio = (await snapshot()).audio; assert.equal(audio.state, 'running'); assert.equal(audio.theme, 'birthday');
+  const audio = (await snapshot()).audio; assert.equal(audio.playback, 'playing'); assert.equal(audio.theme, 'birthday');
   const save = await page.evaluate(() => JSON.parse(localStorage.getItem('nina-julia-aventura-v1'))); assert.equal(save.completed, true);
   await page.reload(); await page.waitForFunction(() => window.aventura); await page.locator('#resume').tap(); await waitPhase('party');
   console.log('RETOMADA DO ANIVERSÁRIO OK');
