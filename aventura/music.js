@@ -80,7 +80,7 @@ export class Music {
   sound(type) {
     if (!this.effects || !this.ctx || this.ctx.state !== 'running') return;
     const now = this.ctx.currentTime;
-    const notes = { collect: [79,84], assistCollect: [76,84], caught: [76,79,84], hit: [72,79], impact: [86,79], shot: [84,91], alienShot: [60,65], wave: [60,67,72], splash: [67,55], complete: [72,76,79,84], defeat: [60,55,48,43], celebrate: [72,76,79,84,88], jump: [67,72], bite: [88,88], bump: [48,43], boost: [60,67,72], cast: [76,67] }[type];
+    const notes = { dogToy: [76,79,84,88], hoop: [72,79,84,91], ramp: [60,72,84], dogs: [67,79], collect: [79,84], assistCollect: [76,84], caught: [76,79,84], hit: [72,79], impact: [86,79], shot: [84,91], alienShot: [60,65], wave: [60,67,72], splash: [67,55], complete: [72,76,79,84], defeat: [60,55,48,43], celebrate: [72,76,79,84,88], jump: [67,72], bite: [88,88], bump: [48,43], boost: [60,67,72], cast: [76,67] }[type];
     notes?.forEach((note, i) => this.tone(note, now + i * .09, .22, .1));
   }
 }

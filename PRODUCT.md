@@ -55,3 +55,11 @@ abertura em retrato e pausa ao girar. HUD compacto, detalhes por toque.
 A aventura pode ser perdida: três corações, invulnerabilidade curta, cronômetro por trecho e
 retry do trecho atual. Nave com três ondas progressivas; desviar é necessário. A companheira
 ajuda a coletar e atirar, mas o escudo automático da rodada 2 foi removido.
+
+## Quarta rodada — controle claro e brincadeiras
+A personagem controlada tem nome e marca dourada. A troca transfere o controle para a
+posição da amiga, sem trocar os corpos; a amiga segue com mais distância. Dogs têm
+formação escalonada, buscam brinquedos opcionais e comemoram de cinco jeitos. Dubai tem
+fantasias de bruxinha, preservando as camisas das seleções. Patins ganham rampas e arcos
+aéreos com combos e bônus de tempo; extras não substituem os objetivos nem removem derrotas.
+Trilhas mais rápidas com bateria eletrônica e baixo pulsante; troca no canto superior direito.

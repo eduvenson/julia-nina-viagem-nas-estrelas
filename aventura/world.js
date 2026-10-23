@@ -315,7 +315,7 @@ export class World {
     this.swimmingFish = []; this.fishJump = null;
     this.shotMeshes = new Map(); this.fountainJets = []; this.spotMarkers = [];
     this.animationBatches = []; this.waterShader = null;
-    this.fishingRig = null; this.fishingAction = null;
+    this.fishingRig = null; this.fishingAction = null; this.dogCelebrationUntil = 0;
   }
   build(state, preview = false) {
     this.clear(); this.state = state; this.preview = preview; this.yaw = 0; this.pitch = .35;
@@ -348,7 +348,35 @@ export class World {
     this.julia = girl(this.root, 'julia', stage.type === 'skate', stage.type === 'skate');
     this.nina = girl(this.root, 'nina', stage.type === 'skate', stage.type === 'skate');
     this.people = [this.julia, this.nina];
+    for (const p of this.people) {
+      p.roleLabels = ['pt', 'es'].map(lang => textSprite(p.root, `${p.name === 'julia' ? (lang === 'pt' ? 'Júlia' : 'Julia') : 'Nina'} · ${lang === 'pt' ? 'VOCÊ' : 'VOS'}`, 0, 4.1, 0, '#ffe49c', 2.8));
+      p.roleLabel = p.roleLabels[0];
+      if (stage.type === 'battle') {
+        const purple = p.name === 'julia' ? '#663583' : '#244e69';
+        cylinder(p.head, purple, 0, .56, 0, .82, .09);
+        const hat = cylinder(p.head, purple, 0, 1.1, 0, .52, 1.15, 0);
+        hat.rotation.z = p.name === 'julia' ? -.18 : .18;
+        cylinder(p.head, '#f3b84d', 0, .63, 0, .5, .12);
+        p.cape = ellipsoid(p.root, purple, 0, 1.6, -.35, .7, .85, .18);
+        p.costume = 'witch';
+      }
+    }
+    this.playerMarker = mesh(this.root, geometry('player-marker', () => new THREE.TorusGeometry(.7, .065, 6, 32)), '#ffe49c', 0, .06, 0, 1, 1, 1, true);
+    this.playerMarker.rotation.x = Math.PI / 2;
+    this.bonusMeshes = state.bonuses.map(b => {
+      const g = group(this.root, b.x, b.kind === 'hoop' ? 1.8 : .65, -b.d);
+      if (b.kind === 'hoop') {
+        mesh(g, geometry('bonus-hoop', () => new THREE.TorusGeometry(1.15, .09, 8, 32)), '#ffe18b', 0, 0, 0, 1, 1, 1, true);
+        const ramp = box(this.root, '#569998', b.x, .21, -b.d + 2, 2, .2, 2.5); ramp.rotation.x = -.18;
+        box(this.root, '#ffe18b', b.x, .48, -b.d + .8, 2, .08, .12, true);
+      } else {
+        ball(g, ['#ffb7a1', '#a1e6dc', '#f2c362'][b.id], 0, 0, 0, .3);
+        for (const side of [-1, 1]) ball(g, '#fff2cc', side * .35, 0, 0, .17);
+      }
+      return g;
+    });
     this.dogs = DOGS.map((d, i) => dog(this.root, d, i));
+    this.dogs.forEach(d => { d.toy = ball(d.root, '#ffe49c', 0, .7, .9, .22); d.toy.visible = false; });
     if (stage.type === 'fish') this.createFishingRig();
     this.targetMeshes = state.targets.map((t, i) => {
       let m;
@@ -709,6 +737,7 @@ export class World {
   }
   orbit(dx, dy) { this.yaw -= dx * .006; this.pitch = Math.max(.12, Math.min(1.05, this.pitch + dy * .004)); }
   effect(event) {
+    if (['dogToy', 'hoop', 'caught', 'complete'].includes(event.type)) this.dogCelebrationUntil = this.state.time + 2.5;
     if (event.type === 'cast' && this.fishingRig) this.fishingAction = { type: 'cast', age: 0 };
     if (event.type === 'caught' && this.fishingRig) this.fishingAction = { type: 'reel', age: 0 };
     if (event.type === 'bubble') {
@@ -733,6 +762,14 @@ export class World {
     const moving = Math.hypot(input.x || 0, input.forward || 0) > .1;
     const leader = s.leader === 'julia' ? this.julia : this.nina;
     const friend = s.leader === 'julia' ? this.nina : this.julia;
+    this.playerMarker.visible = !this.ship && !this.preview && !party;
+    this.playerMarker.position.set(s.x, (fish ? .32 : .18), -s.d);
+    this.people.forEach(p => {
+      p.roleLabels.forEach((label, i) => { label.visible = !this.ship && !this.preview && !party && p === leader && i === (this.lang === 'es' ? 1 : 0); });
+      p.roleLabel = p.roleLabels[this.lang === 'es' ? 1 : 0];
+      if (p.cape) p.cape.rotation.x = Math.sin(time * 5 + (p === leader ? 0 : 2)) * .1;
+    });
+    s.bonuses.forEach((b, i) => { const g = this.bonusMeshes[i]; g.visible = !b.collected; if (b.kind === 'toy') { g.rotation.y = time; g.position.y = .65 + Math.sin(time * 2 + i) * .12; } });
     if (this.ship) {
       this.ship.position.set(s.x, .15 + Math.sin(time * 2) * .08, -s.d);
       this.ship.scale.setScalar(s.visualDefeat ? Math.max(.01, 1 - s.visualDefeat * 1.4) : 1);
@@ -758,7 +795,8 @@ export class World {
       } else if (party || this.preview) { leader.root.rotation.y = -.25; friend.root.rotation.y = .25; }
       this.people.forEach(p => {
         const follower = p !== leader;
-        const motion = girlPose(p.name, time, moving, (follower ? s.helper.y : s.y) > .1, s.stage.type === 'skate');
+        const actorMoving = follower ? Math.hypot(s.x - s.helper.x, s.d - s.helper.d) > 4.6 : moving;
+        const motion = girlPose(p.name, time, actorMoving, (follower ? s.helper.y : s.y) > .1, s.stage.type === 'skate');
         p.root.position.y += motion.bob; p.root.rotation.x = motion.lean; p.root.rotation.z = motion.sway;
         p.head.rotation.y = motion.head;
         p.limbs.forEach((limb, j) => { limb.rotation.x = motion.limbs[j]; if (j % 2 === 0) limb.rotation.z = (j === 0 ? -1 : 1) * motion.armOut; });
@@ -766,14 +804,20 @@ export class World {
         p.knees.forEach((k, j) => { k.rotation.x = moving ? Math.max(0, -motion.limbs[j * 2 + 1]) * .9 : 0; });
         p.eyelids.forEach(lid => { lid.visible = (time + (p.name === 'nina' ? 2.1 : 0)) % 4.7 < .15; });
         if (p.head.userData.pony) p.head.userData.pony.rotation.x = -.3 + motion.bob * 3 + Math.sin(time * 6) * .045;
+        if (follower && time < (s.helper.cheerUntil || 0)) { p.limbs[0].rotation.x = -2.3; p.limbs[2].rotation.x = -2.3; }
         if (follower && s.helper.action === 'shoot' && time - s.playerFiredAt < 4) p.limbs[2].rotation.x = -1.15;
         p.root.visible = !s.visualDefeat || s.visualDefeat < .8;
       });
       this.dogs.forEach((d, i) => {
-        const pose = dogPose(i, time, moving, s.dogCallUntil > time); d.activity = pose.activity;
-        const spread = fish ? .3 : 1.1;
+        const pose = dogPose(i, time, moving, s.dogCallUntil > time, party || time < this.dogCelebrationUntil); d.activity = pose.activity;
+        const spread = fish ? .3 : 1.7;
         let x = party ? (i - 2) * 1.65 : s.x + (i - 2) * spread + pose.x * (fish ? .2 : 1);
-        const z = party ? 5 : -s.d + (pose.activity === 'greet' ? 1.2 : 4 + pose.lag);
+        let z = party ? 5 : -s.d + (pose.activity === 'greet' ? 3 + i * .25 : 2.8 + i * .35 + pose.lag);
+        if (s.dogFetch?.dog === i) {
+          const toy = s.bonuses[s.dogFetch.toy];
+          if (s.dogFetch.remaining > 0) { x = toy.x; z = -toy.d; d.activity = 'fetch'; }
+          else { x = s.x + 2; z = -s.d + 3; d.activity = 'return'; }
+        }
         let hop = pose.hop;
         if (fish) {
           const path = FISH_PATH.find(p => -z >= p.from && -z <= p.to); if (path) x = path.x + (i - 2) * .22 + pose.x * .12;
@@ -783,10 +827,11 @@ export class World {
         const heading = moving ? Math.atan2(x - d.root.position.x, z - d.root.position.z) : 0;
         d.root.rotation.y = heading + pose.spin;
         d.head.rotation.x = pose.pitch; d.head.rotation.y = Math.sin(time * .9 + i) * .12;
-        d.tail.rotation.z = pose.tail; d.body.rotation.x = pose.activity === 'sit' ? -.2 : 0;
+        d.tail.rotation.z = pose.tail; d.body.rotation.x = pose.activity === 'sit' ? -.2 : pose.bow; d.root.rotation.z = pose.roll;
         d.legs.forEach((leg, j) => { leg.rotation.x = pose.activity === 'sit' && j % 2 === 0 ? -.8 : pose.legs[j]; });
         d.ears.forEach((ear, j) => { ear.rotation.x = pose.hop * .6 + Math.sin(time * 7 + j + i) * (moving ? .12 : .025); });
-        d.label.visible = pose.showName;
+        d.toy.visible = s.dogFetch?.dog === i && s.dogFetch.remaining <= 0;
+        d.label.visible = s.dogFetch ? s.dogFetch.dog === i : pose.showName;
       });
     }
     // Projéteis e inimigos compartilham as coordenadas da simulação, sem acerto instantâneo.
