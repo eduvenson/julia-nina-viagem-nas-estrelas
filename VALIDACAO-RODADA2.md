@@ -1,7 +1,7 @@
 # Segunda rodada — jogabilidade, animação e 3D
 
 Implementada e validada localmente em 23/10/2026 no worktree `julia-nina-proxima-fase`,
-branch `fase/nova-fase`. Sem publicação ou PR. A prévia atual está no servidor local 4174;
+branch `fase/nova-fase`. Este é o registro da validação local anterior à publicação. A prévia está no servidor local 4174;
 4173 permanece disponível para os scripts de validação.
 
 ## Feedbacks atendidos
@@ -89,3 +89,16 @@ decorativa de card; foi conferido na tela renderizada. Não é uma auditoria com
 - `test-results/journey/` — etapas concluídas jogando
 
 Essas evidências locais são ignoradas pelo Git. Testes e scripts permitem reproduzi-las.
+
+## Preparação da publicação
+
+O preflight independente encontrou o link da aventura fora da tela inicial legada no celular
+horizontal 844×390. A abertura passou a ter rolagem segura, dimensões compactas nessa
+orientação e alvo de toque de pelo menos 44 px. `npm run test:entry` confirma a posição
+e o toque real que abre o 3D. O mesmo teste falha sobre o HTML do candidato anterior
+(`009fa4647a0fcad35f51631da03646265e28e44e`), sem desfazer o fix no worktree.
+
+`.gitattributes` preserva o whitespace canônico do GLSL embutido no bundle gerado e da
+licença OFL original. Código autoral continua verificado normalmente por `git diff --check`.
+`npm run vendor` reproduziu os bundles sem diferenças. Qualquer alteração do candidato
+após o parecer independente exige novo preflight antes de abrir a PR.

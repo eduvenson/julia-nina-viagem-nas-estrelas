@@ -2,7 +2,8 @@
 
 ## Meta
 Entregar uma aventura 3D jogável do começo ao aniversário de oito anos da Júlia,
-sem substituir nem quebrar as três fases anteriores. Trabalho local; publicação fora do escopo.
+sem substituir nem quebrar as três fases anteriores. Publicação no GitHub Pages autorizada
+pelo usuário em 23/10/2026, depois da segunda rodada.
 
 ## Entrega
 1. Entrada própria `aventura.html`, acessível também pelo seletor antigo.

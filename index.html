@@ -21,7 +21,11 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
 .conf{position:fixed;z-index:199;pointer-events:none;font-size:1.5rem;animation:cF 1.4s ease-out forwards}
 @keyframes cF{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(100px) rotate(300deg) scale(.5)}}
 .mute{position:fixed;top:10px;right:10px;z-index:99;font-size:1.4rem;background:rgba(255,255,255,.08);border:none;border-radius:50%;width:42px;height:42px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff}
-#welcome{gap:20px;text-align:center}
+#welcome{gap:20px;text-align:center;overflow-y:auto;justify-content:flex-start}
+#welcome>*{flex-shrink:0}
+#welcome>.ws{margin-top:auto}
+.new-adventure-link{color:#9de5d9;font-size:1.1rem;text-decoration:underline;text-underline-offset:5px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:auto}
+@media(max-height:550px) and (orientation:landscape){#welcome{gap:10px}#welcome>.ws{font-size:44px;line-height:1}#welcome>.wt{font-size:clamp(1.8rem,4vw,2.4rem)}#welcome>.wu{font-size:.9rem}#welcome>.btn-main{font-size:1.2rem;padding:10px 30px}#welcome>.btn-accel{font-size:.75rem;padding:6px 16px}#welcome>.new-adventure-link{font-size:.95rem}}
 .ws{font-size:min(20vw,100px);animation:bob 2.5s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-16px) rotate(6deg)}}
 .wt{font-size:clamp(2rem,8vw,4rem);line-height:1;background:linear-gradient(135deg,#ffd93d,#ff5e3a,#ff6b9d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -140,7 +144,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
   <div class="wu">Um jogo feito só pra Ninna e Julia!<br>¡Un juego hecho solo para Ninna y Julia!</div>
   <button class="btn-main" id="startBtn">Começar ✨</button>
   <button class="btn-accel" id="accelToggleBtn">📡 Acelerômetro: ON</button>
-  <a href="aventura.html" style="color:#9de5d9;font-size:1.1rem;text-decoration:underline;text-underline-offset:5px">Nova aventura 3D · O presente da Nina →</a>
+  <a class="new-adventure-link" href="aventura.html">Nova aventura 3D · O presente da Nina →</a>
 </div>
 
 <div id="intro" class="scr"></div>
