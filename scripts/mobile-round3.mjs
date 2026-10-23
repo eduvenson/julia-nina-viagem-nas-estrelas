@@ -23,6 +23,8 @@ for (const [name, engine, launchOptions] of [['chrome', chromium, { channel: 'ch
     await page.locator('#audio-recover').waitFor({ state: 'visible' }); await page.locator('#audio-recover').tap();
     await page.waitForFunction(() => window.aventura.snapshot().audio.playback === 'playing' && !window.aventura.snapshot().audio.paused);
     await page.setViewportSize({ width: 390, height: 844 }); await page.locator('#rotate-hint').waitFor({ state: 'visible' });
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(() => window.aventura.snapshot().phase), 'panel', 'Escape não pode retomar atrás da dica de rotação');
     const paused = await page.evaluate(() => window.aventura.snapshot().time); await page.waitForTimeout(250);
     assert.equal(await page.evaluate(() => window.aventura.snapshot().time), paused); assert.equal(await page.locator('#soundtrack').evaluate(a => a.paused), true);
     await page.setViewportSize({ width: 844, height: 390 }); await page.locator('#rotate-hint').waitFor({ state: 'hidden' });

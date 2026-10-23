@@ -203,7 +203,7 @@ function inputs() {
 }
 function frame(time) {
   const dt = lastTime ? Math.min(.05, (time - lastTime) / 1000) : 0; lastTime = time;
-  if (phase === 'play' && $('objective-detail').hidden) {
+  if (phase === 'play' && $('objective-detail').hidden && $('rotate-hint').hidden) {
     input = inputs();
     if (['space', 'battle'].includes(state.stage.type) && (fireHeld || keys.has('e') || state.stage.type === 'space' && keys.has(' '))) act(state);
     tick(state, input, dt);
@@ -273,6 +273,7 @@ addEventListener('keydown', e => {
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
+  if (e.key === 'Escape' && !$('rotate-hint').hidden) { e.preventDefault(); return; }
   if (e.key === 'Escape') { if (panelKind === 'pause') closePanel(); else if (['play', 'intro'].includes(phase)) openPanel('pause'); return; }
   if (phase !== 'play' || !$('rotate-hint').hidden || !$('objective-detail').hidden) return;
   const k = e.key.toLowerCase();

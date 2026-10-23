@@ -79,3 +79,11 @@ e capturas em `test-results/rodada3/`. São ignorados pelo Git.
 
 A pasta de prévia contém apenas arquivos estáticos de execução; não expõe Git, fotos
 privadas, ambiente ou credenciais. O link principal continua oferecendo as fases 1–3 e a fase 4.
+
+## Correção do preflight de publicação
+
+A revisão independente encontrou Escape retomando a simulação atrás da dica de rotação.
+O atalho agora respeita a dica e o loop de jogo exige que ela esteja oculta.
+O teste mobile pressiona Escape em retrato e exige painel pausado e tempo congelado.
+Contrafactual isolado com o app anterior falhou: tempo avançou 0,35 s atrás da dica;
+o mesmo caso corrigido passou. O fluxo mobile completo foi revalidado em Chrome e WebKit.
