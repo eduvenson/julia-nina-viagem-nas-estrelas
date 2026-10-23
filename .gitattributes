@@ -1,0 +1,5 @@
+# Preserve o whitespace canônico da licença e dos shaders GLSL embutidos no bundle gerado.
+# Código autoral continua sujeito a git diff --check.
+aventura/vendor/three.module.js -whitespace
+aventura/fonts/OFL.txt -whitespace
+aventura/vendor/** linguist-vendored

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#163d45">
+  <meta name="description" content="Uma aventura 3D de Nina e Júlia: espaço, amizade, cinco dogs e uma surpresa de aniversário.">
+  <title>O presente da Nina · Viagem nas Estrelas</title>
+  <link rel="icon" href="aventura/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="aventura.webmanifest">
+  <link rel="stylesheet" href="aventura/style.css">
+</head>
+<body>
+  <canvas id="world" aria-label="Mundo 3D de Nina e Júlia"></canvas>
+  <div id="loading" role="status"><span class="loading-star"></span><p>Preparando uma aventura entre amigas…</p></div>
+  <main id="welcome" hidden>
+    <a class="back-link" href="index.html" data-i18n="old">← Fases anteriores</a>
+    <div class="welcome-copy">
+      <div class="wordmark">Nina <span>&</span> Júlia</div>
+      <h1 data-i18n="headline">Uma amizade.<br>Um universo inteiro.</h1>
+      <p class="lead" data-i18n="lead">O presente da Nina para os 8 anos da Júlia. Uma nova aventura 3D, com as duas e seus cinco dogs.</p>
+      <div class="start-actions"><button id="start" class="primary" data-i18n="start">Vamos juntas <span aria-hidden="true">↗</span></button><button id="resume" class="secondary" hidden data-i18n="resume">Continuar aventura</button></div>
+      <p class="small" data-i18n="hint">Mova, pule, explore. A amiga e os dogs vão com você.</p>
+    </div>
+    <div class="welcome-bottom"><span data-i18n="authorship">Uma história da Nina · Feita com o Tio Du</span><div class="language"><button data-lang="pt" aria-label="Português" aria-pressed="true">PT</button><button data-lang="es" aria-label="Español" aria-pressed="false">ES</button></div></div>
+  </main>
+  <section id="choose" hidden aria-labelledby="choose-title">
+    <div class="choose-card"><h2 id="choose-title" data-i18n="chooseTitle">Quem vai guiar a aventura?</h2><p data-i18n="chooseHelp">Você escolhe quem vai na frente. A amiga vem atrás e ajuda!</p><div class="choose-options"><button id="choose-julia"><span class="jersey brazil" aria-hidden="true"></span><strong>Júlia</strong><span data-i18n="brazil">Camisa do Brasil</span></button><button id="choose-nina"><span class="jersey argentina" aria-hidden="true"></span><strong>Nina</strong><span data-i18n="argentina">Camisa da Argentina</span></button></div><button id="choose-back" class="text-button" data-i18n="back">Voltar</button></div>
+  </section>
+  <section id="hud" hidden aria-label="Aventura">
+    <header class="game-header"><div><p id="place"></p><h1 id="stage-title"></h1></div><div class="header-actions"><button id="sound" class="icon-button" aria-label="Desligar música" title="Música"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13M9 9l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></svg></button><button id="pause" class="icon-button" aria-label="Pausar aventura"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg></button></div></header>
+    <div class="mission"><div class="mission-top"><span id="objective"></span><strong id="counter"></strong></div><div class="progress-track"><div id="progress"></div></div><div class="mission-bottom"><span id="hearts" aria-label="5 corações"></span><span id="stage-number"></span></div></div>
+    <div id="target-pointer" hidden aria-hidden="true">↓</div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <div id="fish-status" hidden aria-live="polite"><strong id="fish-text"></strong><div class="fishing-meter"><span id="fish-meter"></span></div></div>
+    <div id="dialogue" hidden><span id="speaker">Nina & Júlia</span><p id="story"></p><button id="begin" class="primary" data-i18n="go">Vamos lá!</button></div>
+    <div id="controls" hidden>
+      <div id="joystick" role="group" aria-label="Analógico de movimento"><span id="stick"></span><span class="stick-cross" aria-hidden="true">+</span></div>
+      <div class="keyboard-hint" data-i18n="keys">WASD / setas · mover<br>Arraste · câmera · Espaço · pular · E · ação</div>
+      <div class="action-buttons"><button id="action" class="action-button"><span id="action-symbol" aria-hidden="true">✦</span><span id="action-label"></span></button><button id="jump" class="jump-button" aria-label="Pular"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27V5M6 15 16 5l10 10"/></svg><span data-i18n="jump">Pular</span></button></div>
+    </div>
+    <button id="swap" class="crew-button" hidden aria-label="Trocar personagem"><span class="crew-dot julia"></span><span id="leader">Júlia</span><span aria-hidden="true">⇄</span><span class="crew-dot nina"></span></button>
+  </section>
+  <section id="panel" class="panel-wrap" hidden role="dialog" aria-modal="true" aria-labelledby="panel-title">
+    <div class="panel"><p id="panel-place"></p><h2 id="panel-title"></h2><p id="panel-text"></p><div id="settings" hidden>
+      <label><span data-i18n="music">Música da aventura</span><input id="music-toggle" type="checkbox" checked></label>
+      <label><span data-i18n="effects">Efeitos sonoros</span><input id="effects-toggle" type="checkbox" checked></label>
+      <label><span data-i18n="volume">Volume</span><input id="volume" type="range" min="0" max="100" value="55"></label>
+      <div class="settings-row"><span data-i18n="language">Idioma</span><div class="language"><button data-lang="pt" aria-label="Português">PT</button><button data-lang="es" aria-label="Español">ES</button></div></div>
+      <p class="control-guide" data-i18n="controlGuide">No celular: analógico à esquerda, pulo e ação à direita. Arraste o cenário para girar a câmera. No computador: WASD ou setas, espaço para pular e E para agir.</p>
+    </div><button id="panel-primary" class="primary"></button><button id="panel-secondary" class="secondary"></button><button id="panel-home" class="text-button" data-i18n="home">Voltar ao início</button></div>
+  </section>
+  <section id="ending" hidden>
+    <div class="ending-copy"><p class="birthday-age" data-i18n="age">8 anos de aventuras</p><h1 data-i18n="birthday">Feliz aniversário,<br><span>Júlia!</span></h1><p class="dedication" data-i18n="dedication">Essa aventura é meu presente para você.<br>Com carinho, Nina.</p><div class="ending-actions"><button id="celebrate" class="primary" data-i18n="celebrate">Mais confete!</button><button id="replay" class="secondary" data-i18n="replay">Jogar de novo juntas</button></div><a href="index.html" class="text-button" data-i18n="old">← Fases anteriores</a></div>
+    <p class="dog-roll">Marcha · Chucha · Luca · Jujuba · Bidu</p>
+  </section>
+  <section id="error" hidden class="panel-wrap" role="alert"><div class="panel"><h1 data-i18n="errorTitle">O 3D precisa de uma ajudinha</h1><p id="error-text">Não foi possível abrir o mundo 3D. Tente um navegador atualizado com WebGL ativado.</p><button onclick="location.reload()" class="primary" data-i18n="tryAgain">Tentar de novo</button><a href="index.html" class="secondary" data-i18n="old">← Fases anteriores</a></div></section>
+  <script type="module">import('./aventura/app.js').catch(function(error){document.getElementById('loading').hidden=true;document.getElementById('error').hidden=false;console.error('Não foi possível carregar a aventura:',error);});</script>
+  <script>window.addEventListener('error',function(e){if(e.target.tagName==='SCRIPT'){document.getElementById('loading').hidden=true;document.getElementById('error').hidden=false;}},true);</script>
+</body>
+</html>
