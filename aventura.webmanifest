@@ -1,0 +1,11 @@
+{
+  "name": "Nina e Júlia · Uma aventura entre amigas",
+  "short_name": "Nina e Júlia",
+  "start_url": "./aventura.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "theme_color": "#163d45",
+  "background_color": "#fff6df",
+  "icons": [{ "src": "aventura/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

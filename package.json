@@ -1,0 +1,20 @@
+{
+  "name": "nina-julia-aventura",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:e2e": "node scripts/journey.mjs",
+    "test:edge": "node scripts/edge-cases.mjs",
+    "inspect": "node scripts/inspect.mjs",
+    "vendor": "node scripts/vendor.mjs",
+    "serve": "python3 -m http.server 4173"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "esbuild": "0.28.2"
+  }
+}
