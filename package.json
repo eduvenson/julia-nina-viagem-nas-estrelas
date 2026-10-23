@@ -7,8 +7,10 @@
     "test:e2e": "node scripts/journey.mjs",
     "test:edge": "node scripts/edge-cases.mjs",
     "test:entry": "node scripts/entrypoint-mobile.mjs",
+    "test:mobile": "node scripts/mobile-round3.mjs",
     "inspect": "node scripts/inspect.mjs",
     "vendor": "node scripts/vendor.mjs",
+    "music": "node scripts/render-music.mjs",
     "serve": "python3 -m http.server 4173"
   },
   "dependencies": {

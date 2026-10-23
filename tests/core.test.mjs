@@ -16,20 +16,20 @@ test('coletar não duplica pontos e a vitória exige objetivo e chegada', () => 
   assert.equal(s.count, 3); assert.equal(s.mode, 'playing'); s.d = s.stage.length; tick(s, {}, .02); assert.equal(s.mode, 'complete');
   act(s); tick(s, { forward: 1 }, .05); assert.equal(s.count, 3);
 });
-test('bolhas viajam antes de acertar, e completar exige vencer as duas ondas', () => {
+test('bolhas viajam antes de acertar, e vencer exige as três ondas com desvio', () => {
   const s = makeState(1); act(s); assert.equal(s.count, 0); assert.equal(s.shots.length, 1);
-  for (let n = 0; n < 600 && s.mode === 'playing'; n++) { if (n % 16 === 0) act(s); tick(s, {}, .02); }
-  assert.equal(s.count, 6); assert.equal(s.wave, 1); assert.equal(s.mode, 'complete');
+  for (let n = 0; n < 2500 && s.mode === 'playing'; n++) { if (n % 16 === 0) act(s); tick(s, { x: Math.max(-1, Math.min(1, (Math.sin(s.time * 1.15) * 5.8 - s.x) * 2)) }, .02); }
+  assert.equal(s.count, 9); assert.equal(s.wave, 2); assert.equal(s.mode, 'complete');
 });
 test('colisão tira um coração, respeita invulnerabilidade e permite recomeçar', () => {
   const s = makeState(2); const o = s.obstacles[0]; s.x = o.x; s.d = o.d;
-  tick(s, {}, .02); assert.equal(s.hearts, 4); advance(s, 1); assert.equal(s.hearts, 4);
+  tick(s, {}, .02); assert.equal(s.hearts, 2); advance(s, .4); assert.equal(s.hearts, 2);
   for (let i = 0; i < 4; i++) { s.invincible = 0; damage(s); }
-  assert.equal(s.mode, 'retry'); const retry = makeState(s.index); assert.equal(retry.hearts, 5); assert.equal(retry.index, 2);
+  assert.equal(s.mode, 'retry'); const retry = makeState(s.index); assert.equal(retry.hearts, 3); assert.equal(retry.index, 2);
 });
 test('pular passa acima do obstáculo e volta ao chão', () => {
   const s = makeState(2); jump(s); advance(s, .2); assert.ok(s.y > .85);
-  s.x = s.obstacles[0].x; s.d = s.obstacles[0].d; tick(s, {}, .02); assert.equal(s.hearts, 5);
+  s.x = s.obstacles[0].x; s.d = s.obstacles[0].d; tick(s, {}, .02); assert.equal(s.hearts, 3);
   s.x = 7; advance(s, 2); assert.equal(s.y, 0); assert.equal(s.vy, 0);
 });
 test('pesca distingue lançamento, puxada antecipada, mordida e janela perdida', () => {
@@ -39,7 +39,7 @@ test('pesca distingue lançamento, puxada antecipada, mordida e janela perdida',
 });
 test('cinco capturas corretas completam a pesca sem punir erros', () => {
   const s = makeState(4); for (const spot of s.fishingSpots) { s.x = spot.x; s.d = spot.d; for (let i = 0; i < spot.quota; i++) { advance(s, 2.3); act(s); while (s.fish.phase === 'waiting') tick(s, {}, .02); act(s); advance(s, 2.3); } }
-  assert.equal(s.mode, 'complete'); assert.equal(s.count, 5); assert.equal(s.hearts, 5);
+  assert.equal(s.mode, 'complete'); assert.equal(s.count, 5); assert.equal(s.hearts, 3);
 });
 test('movimento diagonal tem mesma velocidade, limites e delta limitado', () => {
   const a = makeState(), b = makeState(); tick(a, { forward: 1 }, .05); tick(b, { forward: 1, x: 1 }, .05);

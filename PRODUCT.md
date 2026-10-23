@@ -47,3 +47,11 @@ Nave com cockpit, painel à frente, pilotos virados para o bico; espaço dispara
 Aliens em duas ondas com patrulha e tiros avisados. Zumbis perseguem, preparam bote e se recuperam.
 Pescaria combina pontes estreitas, três saltos e três pontos com quotas; vara, linha 3D,
 mordida, fisgada e devolução visíveis. A primeira parada é o Sol, conforme correção do usuário.
+
+## Terceira rodada — mobile e desafio
+Chrome do iPhone é um alvo confirmado. A trilha usa reprodução de mídia local por toque,
+com recuperação de interrupção; efeitos permanecem em Web Audio. Dica de rotação na primeira
+abertura em retrato e pausa ao girar. HUD compacto, detalhes por toque.
+A aventura pode ser perdida: três corações, invulnerabilidade curta, cronômetro por trecho e
+retry do trecho atual. Nave com três ondas progressivas; desviar é necessário. A companheira
+ajuda a coletar e atirar, mas o escudo automático da rodada 2 foi removido.

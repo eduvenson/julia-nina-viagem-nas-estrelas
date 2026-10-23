@@ -12,8 +12,8 @@ export const STAGES = [
     action: ['Chamar os dogs', 'Llamar a los perritos'], length: 34, goal: 3, type: 'walk', item: 'star', color: '#452742', music: 'adventure' },
   { id: 'espaco', title: ['Batalha das bolhas', 'Batalla de burbujas'], place: ['Órbita da Terra', 'Órbita de la Tierra'],
     story: ['As duas no comando! Os aliens patrulham e lançam bolhas. Desviem dos disparos e revidem! Espaço ou segurar o botão para atirar.', '¡Las dos al mando! Los aliens patrullan y lanzan burbujas. ¡Esquiven y respondan! Espacio o mantener el botón para disparar.'],
-    objective: ['Acertem 6 naves com bolhas', 'Alcancen 6 naves con burbujas'],
-    action: ['Soltar bolha', 'Lanzar burbuja'], length: 34, goal: 6, type: 'space', item: 'alien', color: '#101c41', music: 'battle' },
+    objective: ['Vençam as 3 ondas e desviem dos tiros', 'Venzan las 3 oleadas y esquiven los disparos'],
+    action: ['Soltar bolha', 'Lanzar burbuja'], length: 34, goal: 9, type: 'space', item: 'alien', color: '#101c41', music: 'battle' },
   { id: 'casa', title: ['Vem, Nina!', '¡Vení, Nina!'], place: ['Nossa casinha nas estrelas', 'Nuestra casita en las estrellas'],
     story: ['“Vem, Nina! O foguete está esperando!” Peguem três baterias, pulem os obstáculos e embarquem juntas.', '“¡Vení, Nina! ¡El cohete nos espera!” Junten tres baterías, salten los obstáculos y suban juntas.'],
     objective: ['Peguem 3 baterias e corram até o foguete', 'Junten 3 baterías y corran al cohete'],
@@ -37,12 +37,12 @@ export const STAGES = [
 ];
 
 export const FISH_PATH = [
-  { from: -4, to: 8, x: -2, width: 5 }, { from: 8, to: 16, x: -3, width: 2.8 },
-  { from: 16, to: 23, x: 0, width: 8 }, { from: 23, to: 31, x: 3, width: 2.8 },
-  { from: 31, to: 38, x: 0, width: 8 }, { from: 38, to: 46, x: -2, width: 2.8 },
+  { from: -4, to: 8, x: -2, width: 5 }, { from: 8, to: 16, x: -3, width: 2.4 },
+  { from: 16, to: 23, x: 0, width: 8 }, { from: 23, to: 31, x: 3, width: 2.4 },
+  { from: 31, to: 38, x: 0, width: 8 }, { from: 38, to: 46, x: -2, width: 2.4 },
   { from: 46, to: 59, x: 0, width: 8 }
 ];
-export const FISH_GAPS = [{ from: 12, to: 13.5 }, { from: 27, to: 28.5 }, { from: 41, to: 42.5 }];
+export const FISH_GAPS = [{ from: 12, to: 13.8 }, { from: 27, to: 29 }, { from: 41, to: 43 }];
 export function onFishPath(x, d) {
   return !FISH_GAPS.some(g => d > g.from && d < g.to) && FISH_PATH.some(p => d >= p.from && d <= p.to && Math.abs(x - p.x) <= p.width / 2);
 }
@@ -60,18 +60,18 @@ export function makeState(index = 0, leader = 'julia') {
   for (let i = 0; i < stage.goal && stage.type !== 'fish'; i++) {
     const combat = ['space', 'battle'].includes(stage.type), x = combat ? [-4, 0, 4][i % 3] : [-3, 3, 0, -3, 3][i % 5];
     const d = combat ? (stage.type === 'space' ? 16 : 10) + Math.floor(i / 3) * 12 : 7 + i * ((stage.length - 15) / Math.max(1, stage.goal - 1));
-    const hp = combat && (stage.type === 'battle' || i > 2) ? 2 : 1;
+    const hp = stage.type === 'space' ? 2 + Math.floor(i / 3) : stage.type === 'battle' ? 2 + (i > 2 ? 1 : 0) : 1;
     targets.push({ id: i, x, d, baseX: x, baseD: d, hit: false, hp, maxHp: hp, active: stage.type !== 'space' || i < 3,
-      shootAt: .8 + (i % 3) * .7, charge: 0, phase: 'patrol', timer: 0, aimX: 0, aimD: 0, flash: 0 });
+      shootAt: .7 + (i % 3) * .55, charge: 0, phase: 'patrol', timer: 0, aimX: 0, aimD: 0, flash: 0 });
   }
   const obstacles = [];
-  if (!['fish', 'party'].includes(stage.type)) for (let i = 0; i < (stage.type === 'walk' ? 1 : 7); i++) obstacles.push({ id: i, x: [-3, 3, 0][i % 3], d: 12 + i * ((stage.length - 17) / 7), radius: .8 });
+  if (!['fish', 'party'].includes(stage.type)) for (let i = 0; i < (stage.type === 'walk' ? 1 : 7); i++) obstacles.push({ id: i, x: [-3, 3, 0][i % 3], d: 12 + i * ((stage.length - 17) / 7), radius: .8, baseX: [-3, 3, 0][i % 3], kind: stage.type === 'skate' && i % 3 === 2 ? 'ball' : 'block' });
   const x = stage.type === 'fish' ? -2 : 0;
-  return { index, stage, x, d: 0, y: 0, vy: 0, count: 0, hearts: 5, time: 0, mode: stage.type === 'party' ? 'party' : 'playing',
+  return { index, stage, x, d: 0, y: 0, vy: 0, count: 0, hearts: 3, maxHearts: 3, time: 0, timeLimit: [90, 65, 50, 55, 100, 50, 0][index], timeLeft: [90, 65, 50, 55, 100, 50, 0][index], lossReason: null, damageFlash: 0, mode: stage.type === 'party' ? 'party' : 'playing',
     targets, obstacles, invincible: 0, cooldown: 0, boost: 0, fish: { phase: 'idle', timer: 0, spot: null },
     fishingSpots: [{ id: 0, x: -2, d: 6, quota: 2, caught: 0 }, { id: 1, x: 0, d: 34, quota: 2, caught: 0 }, { id: 2, x: 0, d: 52, quota: 1, caught: 0 }],
     checkpoint: { x, d: 0 }, events: [], leader: leader === 'nina' ? 'nina' : 'julia',
-    helper: { x: x - 1, d: -2.2, y: 0, action: 'follow', fireAt: 2.5, shieldAt: 12 }, assists: 0,
+    helper: { x: x - 1, d: -2.2, y: 0, action: 'follow', fireAt: 4.5 }, assists: 0,
     shots: [], shotId: 0, wave: 0, playerFiredAt: -100, dogCallUntil: 0 };
 }
 export function jump(s) {
@@ -80,7 +80,7 @@ export function jump(s) {
 export function primaryKey(s) { if (s.stage.type === 'space') act(s); else jump(s); }
 function launch(s, helper = false) {
   const x = helper ? s.helper.x : s.x, d = helper ? s.helper.d : s.d;
-  const target = s.targets.filter(t => !t.hit && t.active && (s.stage.type !== 'space' || t.d > d) && Math.hypot(t.x - x, t.d - d) < (s.stage.type === 'space' ? 30 : 14))
+  const target = s.targets.filter(t => !t.hit && t.active && (s.stage.type !== 'space' || t.d > d) && Math.abs(t.x - x) <= (s.stage.type === 'space' ? 4.5 : 7) && Math.hypot(t.x - x, t.d - d) < (s.stage.type === 'space' ? 30 : 14))
     .sort((a, b) => Math.hypot(a.x - x, a.d - d) - Math.hypot(b.x - x, b.d - d))[0];
   const dx = (target?.x ?? x) - x, dd = (target?.d ?? d + 25) - d, len = Math.hypot(dx, dd) || 1;
   if (s.shots.filter(p => p.owner !== 'alien').length >= 12) return;
@@ -90,7 +90,7 @@ function launch(s, helper = false) {
 export function act(s) {
   if (s.mode === 'party') { s.events.push({ type: 'celebrate' }); return; }
   if (s.mode !== 'playing' || s.cooldown > 0) return;
-  s.cooldown = .28;
+  s.cooldown = s.stage.type === 'space' ? .32 : s.stage.type === 'battle' ? .38 : .25;
   if (s.stage.type === 'fish') {
     if (s.fish.phase === 'reeling') return;
     const spot = s.fishingSpots.find(p => p.caught < p.quota && Math.hypot(p.x - s.x, p.d - s.d) < 2.7);
@@ -106,9 +106,12 @@ export function act(s) {
 }
 export function damage(s) {
   if (s.mode !== 'playing' || s.invincible > 0) return;
-  if (s.time >= s.helper.shieldAt) { s.helper.shieldAt = s.time + 14; s.helper.action = 'shield'; s.invincible = 1.5; s.assists++; s.events.push({ type: 'assistShield' }); return; }
-  s.hearts--; s.invincible = 2; s.boost = 0; s.events.push({ type: 'bump' });
-  if (!s.hearts) { s.mode = 'retry'; s.events.push({ type: 'retry' }); }
+  s.hearts--; s.invincible = 1; s.damageFlash = .3; s.boost = 0; s.events.push({ type: 'bump' });
+  if (!s.hearts) lose(s, 'hearts');
+}
+function lose(s, reason) {
+  if (s.mode !== 'playing') return;
+  s.hearts = 0; s.mode = 'retry'; s.lossReason = reason; s.events.push({ type: 'defeat' });
 }
 function checkComplete(s) {
   if (s.mode !== 'playing') return;
@@ -127,48 +130,55 @@ function segmentDistance(x, d, ax, ad, bx, bd) {
 }
 function combat(s, dt) {
   const space = s.stage.type === 'space';
-  if (space && s.wave === 0 && s.targets.slice(0, 3).every(t => t.hit)) {
-    s.wave = 1; s.events.push({ type: 'wave' });
-    s.targets.slice(3).forEach((t, i) => { t.active = true; t.baseD = s.d + 18; t.shootAt = s.time + 1.1 + i * .7; });
+  if (space && s.wave < 2 && s.targets.filter(t => Math.floor(t.id / 3) === s.wave).every(t => t.hit)) {
+    s.wave++; s.events.push({ type: 'wave' });
+    s.targets.filter(t => Math.floor(t.id / 3) === s.wave).forEach((t, i) => { t.active = true; t.baseD = s.d + 18; t.shootAt = s.time + 1 + i * .5; });
   }
   for (const t of s.targets) {
     t.flash = Math.max(0, t.flash - dt); if (t.hit || !t.active) continue;
     if (space) {
-      t.x = t.baseX + Math.sin(s.time * (s.wave ? 1.3 : .85) + t.id * 2) * (s.wave ? 1.65 : 1.1);
+      t.x = t.baseX + Math.sin(s.time * (.95 + s.wave * .35) + t.id * 2) * (1.3 + s.wave * .5);
       t.d = Math.max(s.d + 8, t.baseD + Math.cos(s.time * .9 + t.id) * 2);
       t.charge = Math.max(0, 1 - (t.shootAt - s.time) / 1.05);
       if (t.charge > 0 && t.phase !== 'charge') { t.phase = 'charge'; s.events.push({ type: 'warning', target: t.id }); }
       if (s.time >= t.shootAt) {
         const dx = s.x - t.x, dd = s.d - t.d, len = Math.hypot(dx, dd) || 1;
-        if (s.shots.filter(p => p.owner === 'alien').length < 8) s.shots.push({ id: s.shotId++, owner: 'alien', x: t.x, d: t.d, vx: dx / len * 6, vd: dd / len * 6, life: 8, target: null });
-        s.events.push({ type: 'alienShot', target: t.id }); t.shootAt = s.time + 4.8; t.phase = 'patrol'; t.charge = 0;
+        const speed = 8.5 + s.wave * .8;
+        const angles = s.wave === 0 ? [0] : s.wave === 1 ? [-.14, .14] : [-.22, 0, .22];
+        for (const angle of angles) {
+          if (s.shots.filter(p => p.owner === 'alien').length >= 18) break;
+          s.shots.push({ id: s.shotId++, owner: 'alien', x: t.x, d: t.d,
+            vx: (dx / len * Math.cos(angle) - dd / len * Math.sin(angle)) * speed,
+            vd: (dd / len * Math.cos(angle) + dx / len * Math.sin(angle)) * speed, life: 6, target: null });
+        }
+        s.events.push({ type: 'alienShot', target: t.id }); t.shootAt = s.time + 2.2 - s.wave * .25; t.phase = 'patrol'; t.charge = 0;
       }
     } else {
       const dx = s.x - t.x, dd = s.d - t.d, distance = Math.hypot(dx, dd) || 1;
       if (t.phase === 'windup') {
-        t.timer -= dt; t.charge = 1 - t.timer / .85;
-        if (t.timer <= 0) { t.phase = 'dash'; t.timer = .38; }
+        t.timer -= dt; t.charge = 1 - t.timer / .7;
+        if (t.timer <= 0) { t.phase = 'dash'; t.timer = .45; }
       } else if (t.phase === 'dash') {
-        t.x += t.aimX * dt * 8; t.d += t.aimD * dt * 8; t.timer -= dt;
-        if (t.timer <= 0) { t.phase = 'recover'; t.timer = 1.3; t.charge = 0; }
+        t.x += t.aimX * dt * 9; t.d += t.aimD * dt * 9; t.timer -= dt;
+        if (t.timer <= 0) { t.phase = 'recover'; t.timer = .95; t.charge = 0; }
       } else if (t.phase === 'recover') { t.timer -= dt; if (t.timer <= 0) t.phase = 'patrol'; }
-      else if (distance < 4.3) { t.phase = 'windup'; t.timer = .85; t.aimX = dx / distance; t.aimD = dd / distance; s.events.push({ type: 'zombieWarning', target: t.id }); }
-      else if (distance < 19) { t.phase = 'chase'; t.x += dx / distance * dt * 1.2; t.d += dd / distance * dt * 1.2; }
+      else if (distance < 4.3) { t.phase = 'windup'; t.timer = .7; t.aimX = dx / distance; t.aimD = dd / distance; s.events.push({ type: 'zombieWarning', target: t.id }); }
+      else if (distance < 19) { t.phase = 'chase'; t.x += dx / distance * dt * (1.6 + t.id % 3 * .15); t.d += dd / distance * dt * (1.6 + t.id % 3 * .15); }
       else { t.x = t.baseX + Math.sin(s.time + t.id) * 1.5; t.d = t.baseD + Math.cos(s.time * .7 + t.id); }
       t.x = Math.max(-7, Math.min(7, t.x));
       if (s.y < .8 && distance < 1.3 && t.phase !== 'recover') damage(s);
     }
   }
-  if (s.time - s.playerFiredAt < 4 && s.time >= s.helper.fireAt) {
-    s.helper.fireAt = s.time + 2.8; s.helper.action = 'shoot'; launch(s, true);
+  if (s.time - s.playerFiredAt < 1.2 && s.time >= s.helper.fireAt) {
+    s.helper.fireAt = s.time + 4.5; s.helper.action = 'shoot'; launch(s, true);
   }
   for (const p of s.shots) {
     const ox = p.x, od = p.d; p.life -= dt;
     if (p.owner !== 'alien') {
       const target = s.targets[p.target];
-      if (target && !target.hit) {
+      if (target && !target.hit && target.d > p.d) {
         const dx = target.x - p.x, dd = target.d - p.d, length = Math.hypot(dx, dd) || 1;
-        p.vx += (dx / length * 23 - p.vx) * Math.min(1, dt * 6); p.vd += (dd / length * 23 - p.vd) * Math.min(1, dt * 6);
+        p.vx += (dx / length * 23 - p.vx) * Math.min(1, dt * 1.8); p.vd += (dd / length * 23 - p.vd) * Math.min(1, dt * 1.8);
       }
     }
     p.x += p.vx * dt; p.d += p.vd * dt;
@@ -182,7 +192,13 @@ function combat(s, dt) {
 }
 export function tick(s, input, seconds) {
   if (s.mode !== 'playing') return;
-  const dt = Math.min(Math.max(seconds, 0), .05); s.time += dt;
+  const dt = Math.min(Math.max(seconds, 0), .05); s.time += dt; s.timeLeft = Math.max(0, s.timeLimit - s.time);
+  s.damageFlash = Math.max(0, s.damageFlash - dt);
+  if (s.timeLimit && s.timeLeft === 0) { lose(s, 'time'); return; }
+  for (const o of s.obstacles) {
+    if (s.stage.type === 'run') o.x = o.baseX + Math.sin(s.time * 1.3 + o.id) * 1.8;
+    else if (o.kind === 'ball') o.x = Math.sin(s.time * 1.1 + o.id) * 5.5;
+  }
   s.invincible = Math.max(0, s.invincible - dt); s.cooldown = Math.max(0, s.cooldown - dt); s.boost = Math.max(0, s.boost - dt);
   let { x = 0, forward = 0 } = input; const magnitude = Math.hypot(x, forward); if (magnitude > 1) { x /= magnitude; forward /= magnitude; }
   const speed = (s.stage.type === 'skate' ? 7 : s.stage.type === 'space' ? 8 : 5) * (s.boost > 0 ? 1.65 : 1);
@@ -209,7 +225,10 @@ export function tick(s, input, seconds) {
     const helperNear = Math.hypot(t.x - s.helper.x, t.d - s.helper.d) < 1.3;
     if (playerNear || helperNear) { t.hit = true; s.count++; s.events.push({ type: playerNear ? 'collect' : 'assistCollect', target: t.id }); if (!playerNear) s.assists++; }
   }
-  for (const o of s.obstacles) if (s.y < .85 && Math.hypot(o.x - s.x, o.d - s.d) < o.radius + .45) damage(s);
+  for (const o of s.obstacles) {
+    const height = s.stage.type === 'run' ? 1 : o.kind === 'ball' ? 1.1 : s.stage.type === 'skate' ? 1.25 : .9;
+    if (s.y + .17 < height && Math.hypot(o.x - s.x, o.d - s.d) < o.radius + .45) damage(s);
+  }
   if (fish && s.fish.phase !== 'idle') {
     const spot = s.fishingSpots[s.fish.spot];
     if (s.fish.phase === 'reeling') {
@@ -220,7 +239,7 @@ export function tick(s, input, seconds) {
     else {
       s.fish.timer -= dt;
       if (s.fish.timer <= 0) {
-        if (s.fish.phase === 'waiting') { s.fish = { phase: 'bite', timer: 1.4 - s.count % 3 * .15, spot: spot.id }; s.events.push({ type: 'bite' }); }
+        if (s.fish.phase === 'waiting') { s.fish = { phase: 'bite', timer: 1 - s.count % 3 * .1, spot: spot.id }; s.events.push({ type: 'bite' }); }
         else { s.fish = { phase: 'idle', timer: 0, spot: null }; s.events.push({ type: 'miss' }); }
       }
     }
