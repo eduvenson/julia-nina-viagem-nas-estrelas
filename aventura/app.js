@@ -1,4 +1,4 @@
-import { STAGES, makeState, tick, act, jump, primaryKey, readSave, saveData } from './core.js';
+import { STAGES, makeState, tick, act, jump, primaryKey, readSave, saveData, swapLeader } from './core.js';
 import { World } from './world.js';
 import { Music } from './music.js';
 
@@ -7,7 +7,7 @@ const SAVE_KEY = 'nina-julia-aventura-v1';
 const SETTINGS_KEY = 'nina-julia-settings-v1';
 const translations = {
   rotateTitle: ['Vire o celular para jogar', 'Girá el celular para jugar'], rotateHelp: ['Na horizontal dá para ver os caminhos e jogar com os dois polegares. Se não girar, desative o bloqueio de rotação.', 'En horizontal podés ver los caminos y jugar con los dos pulgares. Si no gira, desactivá el bloqueo de rotación.'], portraitContinue: ['Continuar na vertical', 'Seguir en vertical'], iosVolume: ['No iPhone, ajuste o volume pelos botões do aparelho.', 'En iPhone, ajustá el volumen con los botones del teléfono.'],
-  chooseTitle: ['Quem vai guiar a aventura?', '¿Quién va a guiar la aventura?'], chooseHelp: ['Você escolhe quem vai na frente. A amiga vem atrás e ajuda!', '¡Elegís quién va adelante. Tu amiga te sigue y ayuda!'],
+  chooseTitle: ['Quem vai guiar a aventura?', '¿Quién va a guiar la aventura?'], chooseHelp: ['Você controla a escolhida, marcada em dourado. A amiga segue e ajuda sozinha!', '¡Controlás a la elegida, marcada en dorado. Tu amiga te sigue y ayuda sola!'],
   brazil: ['Camisa do Brasil', 'Camiseta de Brasil'], argentina: ['Camisa da Argentina', 'Camiseta de Argentina'], back: ['Voltar', 'Volver'],
   old: ['← Fases anteriores', '← Fases anteriores'], headline: ['Uma amizade.<br>Um universo inteiro.', 'Una amistad.<br>Un universo entero.'],
   lead: ['O presente da Nina para os 8 anos da Júlia. Uma nova aventura 3D, com as duas e seus cinco dogs.', 'El regalo de Nina para los 8 años de Julia. Una nueva aventura 3D, con las dos y sus cinco perritos.'],
@@ -132,16 +132,17 @@ function startStage(index) {
 }
 function begin() { phase = 'play'; $('dialogue').hidden = true; $('controls').hidden = false; $('swap').hidden = false; $('swap').disabled = state.stage.type === 'space'; $('begin').blur(); updateHud(); }
 function updateHud() {
+  world.lang = lang;
   const stage = state.stage;
   if (stage.type === 'fish') {
     $('fish-meter').style.width = state.fish.phase === 'idle' ? '0%' : `${Math.min(100, state.fish.timer / (state.fish.phase === 'bite' ? 1.6 : 1.25) * 100)}%`;
   }
   const nearSpotId = state.fishingSpots.find(p => p.caught < p.quota && Math.hypot(p.x - state.x, p.d - state.d) < 2.7)?.id ?? -1;
-  const nextKey = `${lang}-${phase}-${state.index}-${state.count}-${state.hearts}-${state.leader}-${state.fish.phase}-${state.fish.spot}-${state.wave}-${state.assists}-${nearSpotId}-${Math.ceil(state.timeLeft)}`;
+  const nextKey = `${lang}-${phase}-${state.index}-${state.count}-${state.hearts}-${state.leader}-${state.fish.phase}-${state.fish.spot}-${state.wave}-${state.assists}-${state.bonusCount}-${nearSpotId}-${Math.ceil(state.timeLeft)}`;
   if (nextKey === hudKey) return;
   hudKey = nextKey;
   $('place').textContent = t(stage.place); $('stage-title').textContent = t(stage.title); $('objective').textContent = t(stage.objective);
-  $('objective-detail').textContent = t(stage.objective);
+  $('objective-detail').textContent = t(stage.objective) + t([' Você controla quem está com a marca dourada. A amiga acompanha e ajuda. Brinquedos e arcos são extras: dão tempo, mas não são obrigatórios.', ' Controlás a quien lleva la marca dorada. Tu amiga acompaña y ayuda. Juguetes y aros son opcionales: dan tiempo extra.']);
   $('objective-toggle').setAttribute('aria-label', t(['Ver objetivo da missão', 'Ver objetivo de la misión']));
   const timeLeft = Math.ceil(state.timeLeft); $('mission-time').textContent = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
   $('mission-time').classList.toggle('urgent', timeLeft <= 15); $('mission-time').setAttribute('aria-label', t([`${timeLeft} segundos restantes`, `${timeLeft} segundos restantes`]));
@@ -152,7 +153,12 @@ function updateHud() {
   $('hearts').innerHTML = Array.from({ length: state.maxHearts }, (_, i) => `<span class="${i >= state.hearts ? 'lost' : ''}">${heart}</span>`).join('');
   $('hud').classList.toggle('low-health', state.hearts === 1);
   $('hearts').setAttribute('aria-label', t([`${state.hearts} corações`, `${state.hearts} corazones`]));
-  $('leader').textContent = state.leader === 'julia' ? t(['Júlia', 'Julia']) : 'Nina';
+  const leaderName = state.leader === 'julia' ? t(['Júlia', 'Julia']) : 'Nina';
+  const fishingBusy = stage.type === 'fish' && state.fish.phase !== 'idle';
+  $('swap').disabled = stage.type === 'space' || fishingBusy;
+  $('leader').textContent = fishingBusy ? t([`${leaderName} · pescando`, `${leaderName} · pescando`]) : t([`Você: ${leaderName}`, `Vos: ${leaderName}`]);
+  $('swap').title = fishingBusy ? t(['Termine a pescaria para trocar', 'Terminá de pescar para cambiar']) : t(['Trocar personagem', 'Cambiar personaje']);
+  $('swap').setAttribute('aria-label', fishingBusy ? t(['Termine a pescaria para trocar personagem', 'Terminá de pescar para cambiar de personaje']) : t([`Você controla ${leaderName}. Trocar personagem`, `Controlás a ${leaderName}. Cambiar personaje`]));
   const fishing = stage.type === 'fish'; $('fish-status').hidden = !fishing || phase !== 'play';
   $('jump').hidden = stage.type === 'space'; $('joystick').hidden = false;
   $('action-label').textContent = fishing ? t(state.fish.phase === 'bite' ? ['Puxar agora!', '¡Tirar ahora!'] : state.fish.phase === 'reeling' ? ['Olha o peixe!', '¡Mirá el pez!'] : state.fish.phase === 'waiting' ? ['Esperar…', 'Esperar…'] : stage.action) : stage.type === 'space' ? t(['Atirar', 'Disparar']) : t(stage.action);
@@ -193,7 +199,7 @@ async function unlockAudio() {
   const ok = await music.unlock();
   syncSound(); return ok;
 }
-function action() { if (phase === 'party' || phase === 'play' && $('objective-detail').hidden) act(state); }
+function action() { if (phase === 'party' || phase === 'play' && $('objective-detail').hidden) { act(state); updateHud(); } }
 function jumpAction() { if (phase === 'play' && $('objective-detail').hidden) jump(state); }
 function inputs() {
   const x = (keys.has('d') || keys.has('arrowright') ? 1 : 0) - (keys.has('a') || keys.has('arrowleft') ? 1 : 0) + joystick.x;
@@ -223,6 +229,10 @@ function frame(time) {
     if (state.stage.type === 'fish' && ['bite', 'caught', 'nextSpot'].includes(event.type)) { $('toast').classList.remove('show'); toastUntil = 0; }
     else if (event.type === 'releaseFish' && state.count < state.stage.goal) toast(messages.nextSpot);
     else if (['warning', 'zombieWarning'].includes(event.type)) { if (state.time > warningAt) { toast(messages[event.type]); warningAt = state.time + 5; } }
+    else if (['dogToy', 'hoop'].includes(event.type)) {
+      const dogName = ['Marcha', 'Chucha', 'Luca', 'Jujuba', 'Bidu'][event.dog];
+      toast(event.type === 'hoop' ? [`Salto! Combo ×${event.combo} · +${event.extra}s`, `¡Salto! Combo ×${event.combo} · +${event.extra}s`] : [`${dogName} pegou o brinquedo! +${event.extra}s`, `¡${dogName} encontró el juguete! +${event.extra}s`]);
+    }
     else if (event.type.startsWith('assist')) {
       if (event.type !== 'assistShot') { const name = state.leader === 'julia' ? 'Nina' : t(['Júlia', 'Julia']); toast([`${name} ajudou! Juntas é melhor.`, `¡${name} ayudó! Juntas es mejor.`]); }
     }
@@ -252,7 +262,7 @@ for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) $('acti
 $('action').addEventListener('click', e => { if (e.detail === 0) action(); });
 $('jump').addEventListener('pointerdown', e => { e.preventDefault(); jumpAction(); });
 $('jump').addEventListener('click', e => { if (e.detail === 0) jumpAction(); });
-$('swap').addEventListener('click', () => { if (phase !== 'play') return; state.leader = state.leader === 'julia' ? 'nina' : 'julia'; selectedLeader = state.leader; store(SAVE_KEY, saveData(state.index, selectedLeader)); updateHud(); toast(state.leader === 'julia' ? ['Agora a Júlia guia a turma!', '¡Ahora Julia guía al grupo!'] : ['Agora a Nina guia a turma!', '¡Ahora Nina guía al grupo!']); });
+$('swap').addEventListener('click', () => { if (phase !== 'play') return; if (!swapLeader(state)) return; selectedLeader = state.leader; store(SAVE_KEY, saveData(state.index, selectedLeader)); updateHud(); toast(state.leader === 'julia' ? ['Agora a Júlia guia a turma!', '¡Ahora Julia guía al grupo!'] : ['Agora a Nina guia a turma!', '¡Ahora Nina guía al grupo!']); });
 $('celebrate').addEventListener('click', () => { unlockAudio(); action(); });
 $('replay').addEventListener('click', () => openPanel('restart'));
 function toggleMusic() { if (music.enabled && music.status === 'playing') { music.enabled = false; music.pause(); } else { music.enabled = true; unlockAudio(); } syncSound(); settings(); }
@@ -321,8 +331,9 @@ try {
   Object.defineProperty(window, 'aventura', { value: Object.freeze({ snapshot: () => ({ phase, index: state.index, stageId: state.stage.id, x: state.x, d: state.d, y: state.y,
     count: state.count, hearts: state.hearts, maxHearts: state.maxHearts, time: state.time, timeLeft: state.timeLeft, lossReason: state.lossReason, cooldown: state.cooldown, mode: state.mode, fish: { ...state.fish }, leader: state.leader, yaw: world.yaw,
     targets: state.targets.map(t => ({ ...t })), obstacles: state.obstacles.map(o => ({ ...o })), shots: state.shots.map(p => ({ ...p })), wave: state.wave,
+    bonuses: state.bonuses.map(b => ({...b})), bonusCount: state.bonusCount, combo: state.combo, dogFetch: state.dogFetch ? {...state.dogFetch} : null,
     helper: { ...state.helper }, assists: state.assists, controls: { firing: fireHeld, x: joystick.x, y: joystick.y, keys: [...keys] }, fishingSpots: state.fishingSpots.map(p => ({ ...p })),
-    actors: { girls: world.people.map(p => ({ name: p.name, x: p.root.position.x, y: p.root.position.y, z: p.root.position.z, head: p.head.rotation.y, stride: p.limbs[1].rotation.x })), dogs: world.dogs.map(d => ({ name: d.info.name, activity: d.activity, label: d.label.visible, x: d.root.position.x, y: d.root.position.y, z: d.root.position.z })) },
+    actors: { girls: world.people.map(p => ({ name: p.name, x: p.root.position.x, y: p.root.position.y, z: p.root.position.z, controlled: p === (state.leader === 'nina' ? world.nina : world.julia), costume: p.costume || null, roleVisible: p.roleLabel?.visible, head: p.head.rotation.y, stride: p.limbs[1].rotation.x })), dogs: world.dogs.map(d => ({ name: d.info.name, activity: d.activity, label: d.label.visible, x: d.root.position.x, y: d.root.position.y, z: d.root.position.z })) },
     fishingVisual: world.fishingRig ? { line: world.fishingRig.line.visible, segments: world.fishingRig.line.count, rod: world.fishingRig.rod.visible, fish: world.fishingRig.fish.visible, phase: world.fishingAction?.type, fishY: world.fishingRig.fish.position.y } : null,
     flight: world.ship ? { noseD: 2.65, crewHeading: world.people.map(p => p.root.rotation.y), panelZ: -.95, exhaustZ: 3 } : null,
     audio: { state: music.ctx?.state, theme: music.theme, voices: music.voices.size, energy: music.energy(), enabled: music.enabled, playback: music.status, paused: music.media.paused, currentTime: music.media.currentTime, readyState: music.media.readyState },

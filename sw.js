@@ -1,4 +1,4 @@
-const CACHE = 'viagem-estrelas-v4-3d-rodada3-1';
+const CACHE = 'viagem-estrelas-v4-3d-rodada4-1';
 const FILES = ['./', 'index.html', 'manifest.json', 'aventura.html',
   'aventura/style.css', 'aventura/core.js', 'aventura/world.js', 'aventura/music.js', 'aventura/score.js', 'aventura/motion.js', 'aventura/app.js',
   'aventura/audio/adventure.mp3', 'aventura/audio/battle.mp3', 'aventura/audio/calm.mp3', 'aventura/audio/chase.mp3', 'aventura/audio/birthday.mp3',

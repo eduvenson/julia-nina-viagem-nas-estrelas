@@ -9,7 +9,7 @@ export const STAGES = [
   { id: 'sol', title: ['Do Sol à Terra', 'Del Sol a la Tierra'], place: ['Estação Solar · Nossa partida', 'Estación Solar · Nuestra salida'],
     story: ['Nossa aventura começa no Sol, na estação imaginária da Nina! Juntem três estrelas e embarquem rumo à Terra com os dogs.', '¡Nuestra aventura empieza en el Sol, en la estación imaginaria de Nina! Junten tres estrellas y suban rumbo a la Tierra con los perritos.'],
     objective: ['Encontrem 3 estrelas e cheguem ao foguete', 'Encuentren 3 estrellas y lleguen al cohete'],
-    action: ['Chamar os dogs', 'Llamar a los perritos'], length: 34, goal: 3, type: 'walk', item: 'star', color: '#452742', music: 'adventure' },
+    action: ['Buscar brinquedo', 'Buscar juguete'], length: 34, goal: 3, type: 'walk', item: 'star', color: '#452742', music: 'adventure' },
   { id: 'espaco', title: ['Batalha das bolhas', 'Batalla de burbujas'], place: ['Órbita da Terra', 'Órbita de la Tierra'],
     story: ['As duas no comando! Os aliens patrulham e lançam bolhas. Desviem dos disparos e revidem! Espaço ou segurar o botão para atirar.', '¡Las dos al mando! Los aliens patrullan y lanzan burbujas. ¡Esquiven y respondan! Espacio o mantener el botón para disparar.'],
     objective: ['Vençam as 3 ondas e desviem dos tiros', 'Venzan las 3 oleadas y esquiven los disparos'],
@@ -27,7 +27,7 @@ export const STAGES = [
     objective: ['Explorem as pontes e pesquem 5 peixes', 'Exploren los puentes y pesquen 5 peces'],
     action: ['Lançar linha', 'Lanzar la línea'], length: 56, goal: 5, type: 'fish', item: 'fish', color: '#b3ded2', music: 'calm' },
   { id: 'irigoyen', title: ['Patins em Bernardo de Irigoyen', 'Patines en Bernardo de Irigoyen'], place: ['Argentina · À beira do lago', 'Argentina · Junto al lago'],
-    story: ['Última parada! Coloquem os capacetes, sigam a pista do lago e juntem cinco estrelas. A surpresa está chegando!', '¡Última parada! Pónganse los cascos, sigan la pista del lago y junten cinco estrellas. ¡Se viene la sorpresa!'],
+    story: ['Capacetes prontos! Façam slalom, usem as rampas e pulem pelos arcos para ganhar tempo. Juntem cinco estrelas para chegar à surpresa!', '¡Cascos listos! Hagan eslalon, usen las rampas y salten por los aros para ganar tiempo. ¡Junten cinco estrellas para llegar a la sorpresa!'],
     objective: ['Juntem 5 estrelas e cruzem a chegada', 'Junten 5 estrellas y crucen la meta'],
     action: ['Acelerar', 'Acelerar'], length: 64, goal: 5, type: 'skate', item: 'star', color: '#b3dce4', music: 'chase' },
   { id: 'festa', title: ['Feliz aniversário, Júlia!', '¡Feliz cumpleaños, Julia!'], place: ['8 anos de aventuras', '8 años de aventuras'],
@@ -71,8 +71,9 @@ export function makeState(index = 0, leader = 'julia') {
     targets, obstacles, invincible: 0, cooldown: 0, boost: 0, fish: { phase: 'idle', timer: 0, spot: null },
     fishingSpots: [{ id: 0, x: -2, d: 6, quota: 2, caught: 0 }, { id: 1, x: 0, d: 34, quota: 2, caught: 0 }, { id: 2, x: 0, d: 52, quota: 1, caught: 0 }],
     checkpoint: { x, d: 0 }, events: [], leader: leader === 'nina' ? 'nina' : 'julia',
-    helper: { x: x - 1, d: -2.2, y: 0, action: 'follow', fireAt: 4.5 }, assists: 0,
-    shots: [], shotId: 0, wave: 0, playerFiredAt: -100, dogCallUntil: 0 };
+    helper: { x: x - 2.4, d: 0, y: 0, action: 'follow', fireAt: 4.5 }, assists: 0,
+    shots: [], shotId: 0, wave: 0, playerFiredAt: -100, dogCallUntil: 0, dogFetch: null, bonusCount: 0, combo: 0, comboUntil: 0,
+    bonuses: ['walk', 'run', 'fish', 'skate'].includes(stage.type) ? [0, 1, 2].map((id) => ({ id, kind: stage.type === 'skate' ? 'hoop' : 'toy', x: stage.type === 'fish' ? [-2, 0, 0][id] : [0, 3, -3][id], d: stage.type === 'fish' ? [5, 34, 52][id] : stage.type === 'skate' ? [18, 42, 58][id] : [9, 20, 29][id], collected: false })) : [] };
 }
 export function jump(s) {
   if (s.mode === 'playing' && s.y === 0 && s.stage.type !== 'space') { s.vy = 8.5; s.events.push({ type: 'jump' }); }
@@ -102,7 +103,26 @@ export function act(s) {
     } else { s.fish = { phase: 'idle', timer: 0, spot: null }; s.events.push({ type: 'early' }); }
   } else if (['space', 'battle'].includes(s.stage.type)) { launch(s); s.playerFiredAt = s.time; }
   else if (['run', 'skate'].includes(s.stage.type)) { s.boost = 1.5; s.events.push({ type: 'boost' }); }
-  else { s.dogCallUntil = s.time + 4; s.events.push({ type: 'dogs' }); }
+  else {
+    s.dogCallUntil = s.time + 4;
+    const toy = s.bonuses.find(b => !b.collected && b.kind === 'toy' && Math.hypot(b.x - s.x, b.d - s.d) < 11);
+    if (toy && !s.dogFetch) s.dogFetch = { dog: (s.bonusCount + s.index) % 5, toy: toy.id, remaining: 1.4, until: s.time + 2.8 };
+    s.events.push({ type: 'dogs' });
+  }
+}
+// A troca transfere o controle para a posição da amiga, sem trocar os corpos de lugar.
+export function swapLeader(s) {
+  if (s.mode !== 'playing' || s.stage.type === 'space' || s.stage.type === 'fish' && s.fish.phase !== 'idle') return false;
+  [s.x, s.helper.x] = [s.helper.x, s.x]; [s.d, s.helper.d] = [s.helper.d, s.d];
+  [s.y, s.helper.y] = [s.helper.y, s.y]; s.vy = 0;
+  s.leader = s.leader === 'julia' ? 'nina' : 'julia'; return true;
+}
+function rewardBonus(s, bonus, dog = null) {
+  if (bonus.collected) return;
+  bonus.collected = true; s.bonusCount++; s.combo = s.time < s.comboUntil ? Math.min(3, s.combo + 1) : 1;
+  s.comboUntil = s.time + 9; const extra = 2 + s.combo;
+  s.timeLimit += extra; s.timeLeft += extra;
+  s.events.push({ type: bonus.kind === 'hoop' ? 'hoop' : 'dogToy', bonus: bonus.id, dog: dog ?? (s.bonusCount - 1 + s.index) % 5, extra, combo: s.combo });
 }
 export function damage(s) {
   if (s.mode !== 'playing' || s.invincible > 0) return;
@@ -206,11 +226,25 @@ export function tick(s, input, seconds) {
   if (s.y > 0 || s.vy > 0) { s.vy -= 20 * dt; s.y = Math.max(0, s.y + s.vy * dt); if (!s.y) s.vy = 0; }
   const gap = s.stage.type === 'fish' && !onFishPath(s.x, s.d) && s.y < .18;
   if (gap) { damage(s); s.x = s.checkpoint.x; s.d = s.checkpoint.d; s.y = 0; s.vy = 0; s.events.push({ type: 'splash' }); }
+  if (s.dogFetch) {
+    s.dogFetch.remaining -= dt;
+    if (s.dogFetch.remaining <= 0) rewardBonus(s, s.bonuses[s.dogFetch.toy], s.dogFetch.dog);
+    if (s.time >= s.dogFetch.until) s.dogFetch = null;
+  }
+  for (const b of s.bonuses) {
+    if (b.collected) continue;
+    const near = Math.hypot(b.x - s.x, b.d - s.d);
+    if (b.kind === 'hoop') {
+      // A rampa lança ao entrar; o arco também aceita um salto manual.
+      if (Math.abs(b.x - s.x) < 1 && s.d > b.d - 2 && s.d < b.d - .8 && forward > .1 && s.y === 0) { s.vy = 9; s.events.push({ type: 'ramp' }); }
+      if (near < 1.4 && s.y > .65) rewardBonus(s, b);
+    } else if (near < 3.5 && !s.dogFetch) s.dogFetch = { dog: (s.bonusCount + s.index) % 5, toy: b.id, remaining: 1.4, until: s.time + 2.8 };
+  }
   const fish = s.stage.type === 'fish';
   const fishPlatform = fish && FISH_PATH.find(p => s.d >= p.from && s.d <= p.to);
-  const side = fish ? fishPlatform?.width >= 5 ? -1.3 : 0 : s.leader === 'nina' ? 1 : -1;
+  const side = fish ? fishPlatform?.width >= 5 ? -1.3 : 0 : s.leader === 'nina' ? 2.4 : -2.4;
   s.helper.x += (s.x + side - s.helper.x) * Math.min(1, dt * 3.5);
-  s.helper.d += (s.d - 2.2 - s.helper.d) * Math.min(1, dt * 4);
+  s.helper.d += (Math.max(0, s.d - 3.8) - s.helper.d) * Math.min(1, dt * 4);
   s.helper.y += (s.y - s.helper.y) * Math.min(1, dt * 7);
   if (fish) {
     const path = FISH_PATH.find(p => s.helper.d >= p.from && s.helper.d <= p.to);
