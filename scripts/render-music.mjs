@@ -22,9 +22,23 @@ for (const [name, theme] of Object.entries(THEMES)) {
     note(melody, time, stepDuration * 3, .18); note(melody && melody + 12, time, stepDuration * 2, .022);
     note(chord[step % 3] + 12, time, stepDuration * 2, .05);
     if (step % 4 === 0) { note(chord[0] - 12, time, stepDuration * 3.5, .2, true); chord.forEach(n => note(n, time, stepDuration * 6, .035)); }
-    if (['battle', 'chase'].includes(name) && step % 2 === 0) {
-      const offset = Math.round(time * rate);
-      for (let i = 0; i < rate * .13; i++) { const t = i / rate; samples[(offset + i) % length] += Math.sin((60 * t + .9 * (1 - Math.exp(-t * 35))) * Math.PI * 2) * Math.exp(-t * 32) * .2; }
+    // Bateria eletrônica original, com ruído determinístico e viradas a cada oito compassos.
+    if (name !== 'birthday') {
+      const intense = ['battle', 'chase'].includes(name), offset = Math.round(time * rate);
+      let seed = step + 701;
+      const noise = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2147483648 - 1; };
+      const kick = step % 2 === 0 || intense && step % 16 === 15;
+      const snare = step % 8 === 4 || intense && step % 32 >= 29;
+      for (let i = 0; i < rate * .18; i++) {
+        const t = i / rate, n = noise();
+        const drum = kick ? Math.sin((48 * t + 1.3 * (1 - Math.exp(-t * 40))) * Math.PI * 2) * Math.exp(-t * 25) * (intense ? .34 : .24) : 0;
+        const clap = snare ? (n * .16 + Math.sin(t * 185 * Math.PI * 2) * .065) * Math.exp(-t * 30) : 0;
+        const hat = n * (step % 2 ? .045 : .025) * Math.exp(-t * 140);
+        samples[(offset + i) % length] += drum + clap + hat;
+      }
+      // Baixo pulsante e arpejo de oitavas dão impulso sem aumentar só o volume.
+      note(chord[0] - 12 + (step % 4 === 3 ? 12 : 0), time, stepDuration * .8, intense ? .22 : .13, true);
+      if (intense) note(chord[step % 3] + 24, time + stepDuration / 2, stepDuration * .6, .045);
     }
   }
   const pcm = new Int16Array(length * 2);
